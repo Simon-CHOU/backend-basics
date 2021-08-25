@@ -1,0 +1,2 @@
+com/simon/MainTest.java
+ com.simon.MainTest
