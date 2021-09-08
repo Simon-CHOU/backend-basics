@@ -1,4 +1,4 @@
-package com.simon.encryption.basic.core.aes;
+package com.simon.encryption.basic.core;
 
 import java.io.*;
 import java.security.*;

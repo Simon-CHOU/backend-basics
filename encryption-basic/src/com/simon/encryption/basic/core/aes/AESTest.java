@@ -1,5 +1,7 @@
 package com.simon.encryption.basic.core.aes;
 
+import com.simon.encryption.basic.core.Util;
+
 import java.io.*;
 import java.security.*;
 import javax.crypto.*;

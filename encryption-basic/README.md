@@ -41,3 +41,26 @@ java aes.AESTest -decrypt encryptedFile decryptedFile secret.key
 疑问：
 如何使用CLI编译 AESTest和Util
 如何使用IDEA编译 AESTest和Util，并通过CLI执行 .class
+
+
+## Cipher Streams
+JCE库提供了一套方便的流类，可以自动加密或解密流数据。解密流数据。// todo 没懂
+
+## Public Key Ciphers
+如果Alice向Bob发送一个加密的方法，Bob需要Alice使用的相同的密钥。
+如果Alice改变了密钥，她需要把信息和通过安全通道的新密钥同时发送给Bob。但是，也许她没有安全通道给Bob--这就是为什么她首先要给他加密信息。
+非对称加密想对于对称加密非常耗时，不能直接用以加密大文件。然而，这个问题可以通过将公钥密码与快速对称密码结合起来而轻松解决：
+- Alice加密时：先用随机对称密钥加密文件，再用公钥加密对称密钥;
+- Bob解密时：先用私钥解密对称密钥，再用对称密钥解密文件。
+因为只有Bob有私钥，所以是安全的。
+  
+非对称加密典型实现 RSA算法。三人首字母命令。2000年10月之前使用这个算法非常贵，后来之后专利过期，免费用。
+
+```shell
+# 生成公钥、私钥
+java rsa.RSATest -genkey public.key private.key
+# 加密文件
+java rsa.RSATest -encrypt plaintextFile-RSA encryptedFile-RSA public.key
+# 解密文件
+java rsa.RSATest -decrypt encryptedFile-RSA decryptedFile-RSA private.key
+```

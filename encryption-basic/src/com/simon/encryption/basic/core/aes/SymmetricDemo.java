@@ -1,4 +1,4 @@
-package com.simon.encryption.basic.core;
+package com.simon.encryption.basic.core.aes;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
