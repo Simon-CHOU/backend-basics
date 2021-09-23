@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.simon.MainTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2021-08-25T09:33:43" hostname="simon-20cla275cd" time="0.864">
+<testsuite name="com.simon.MainTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2021-09-23T10:20:44" hostname="simon-20cla275cd" time="0.022">
   <properties/>
-  <testcase name="should_add_todo_item()" classname="com.simon.MainTest" time="0.851"/>
-  <testcase name="should_throw_exception_for_null_todo_item()" classname="com.simon.MainTest" time="0.011"/>
+  <testcase name="should_add_todo_item()" classname="com.simon.MainTest" time="0.008"/>
+  <testcase name="should_throw_exception_for_null_todo_item()" classname="com.simon.MainTest" time="0.012"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
