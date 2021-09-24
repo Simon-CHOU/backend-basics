@@ -20,6 +20,12 @@ public class Main {
         //        System.out.println(optional); //Optional[2]
         //        optional = Optional.ofNullable(new AtomicInteger()); //Optional reference can be reassigned
 
+        //        retrievingValueFromOptional();
+
+
+    }
+
+    private static void retrievingValueFromOptional() {
         Optional<String> firstEven =
                 Stream.of("five", "even", "length", "string", "values")
                         .filter(s -> s.length() % 2 == 0)
@@ -32,7 +38,7 @@ public class Main {
                         .filter(s -> s.length() % 2 != 0)
                         .findFirst();
         System.out.println(firstOdd);
-//        System.out.println(firstOdd.get());// Exception, no value present
+        //        System.out.println(firstOdd.get());// Exception, no value present
         // you should never call get on an
         //Optional unless you’re sure it contains a value or you risk throwing the exception
 
