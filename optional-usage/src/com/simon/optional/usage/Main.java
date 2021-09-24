@@ -1,5 +1,6 @@
 package com.simon.optional.usage;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -46,6 +47,11 @@ public class Main {
         System.out.println(firstOdd.orElse("No odd length strings")); //No odd length strings
 
 
+        System.out.println(firstEven.orElseThrow(NoSuchElementException::new));
+        // ifPresent method allows you to provide a Consumer that is only executed
+        //when the Optional contains a value
+        firstEven.ifPresent(val -> System.out.println("Found an even-length string"));
+        firstOdd.ifPresent(val -> System.out.println("Found an odd-length string"));
     }
 
     //create optional
