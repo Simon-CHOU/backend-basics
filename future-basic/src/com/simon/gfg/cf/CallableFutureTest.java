@@ -1,4 +1,4 @@
-package com.simon.cf;
+package com.simon.gfg.cf;
 
 // Java program to illustrate Callable and FutureTask
 // for random number generation

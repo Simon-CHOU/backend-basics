@@ -9,9 +9,11 @@
 - Feign Client Mutli-Thread
 - Executor Service, Fork/Join, Parallel Stream
 - ThreadLocal
+- Thread pools, Blocking Queue
+- synchronized
 等等……
 
-所以，在这个项目里，通过跑通 GeeksForGeeks, Tutorial, 还有 Core Java 书上的代码实例，
+所以，在这个项目里，通过跑通 GeeksForGeeks, Tutorial, 还有 Core Java，Java Concurrency in Practice 书上的代码实例，
 我希望我能对多线程异步调用有一个比较完备的认知。
 
 
@@ -30,3 +32,14 @@ prerequisite:
 ↓
 
 [Future and FutureTask in java](https://www.geeksforgeeks.org/future-and-futuretask-in-java/?ref=gcse)
+
+
+## Concurrency
+
+[The Java Tutorials: Lesson: Concurrency](https://docs.oracle.com/javase/tutorial/essential/concurrency/index.html)
+
+[Executors](https://docs.oracle.com/javase/tutorial/essential/concurrency/executors.html)
+
+[Thread Pools](https://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html)
+
+Using worker threads minimizes the overhead due to thread creation.

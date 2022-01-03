@@ -1,4 +1,4 @@
-package com.simon.mt;
+package com.simon.gfg.mt;
 
 // Java code for thread creation by extending
 // the Thread class

@@ -1,10 +1,8 @@
-package com.simon.cf;
+package com.simon.gfg.cf;
 
 // Java program to illustrate Runnable
 // for random number generation
 import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 
 // https://www.geeksforgeeks.org/callable-future-java/?ref=gcse
 class RunnableExample implements Runnable

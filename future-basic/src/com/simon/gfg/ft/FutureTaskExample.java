@@ -1,4 +1,4 @@
-package com.simon.ft;
+package com.simon.gfg.ft;
 
 // Java program do two FutureTask
 // using Runnable Interface
