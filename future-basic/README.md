@@ -43,3 +43,18 @@ prerequisite:
 [Thread Pools](https://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html)
 
 Using worker threads minimizes the overhead due to thread creation.
+
+## Structuring Concurrent Applications
+
+《Java Concurrency in Practice》
+
+## Fork
+
+[ForkJoinPool](https://www.geeksforgeeks.org/forkjoinpool-class-in-java-with-examples/)
+[Difference Between Fork/Join Framework and ExecutorService in Java](https://www.geeksforgeeks.org/difference-between-fork-join-framework-and-executorservice-in-java/)
+
+[Introduction of Process Synchronization](https://www.geeksforgeeks.org/introduction-of-process-synchronization/)
+
+↓
+ 
+[Fork and Join Constructs in Concurrency](https://www.geeksforgeeks.org/fork-and-join-constructs-in-concurrency/)
