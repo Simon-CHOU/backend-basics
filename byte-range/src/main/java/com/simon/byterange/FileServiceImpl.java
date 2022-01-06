@@ -26,7 +26,7 @@ public class FileServiceImpl implements FileService {
      */
     public void fileChunkDownload(String range, HttpServletRequest request, HttpServletResponse response) {
         //要下载的文件，此处以项目pom.xml文件举例说明。实际项目请根据实际业务场景获取
-        File file = new File(System.getProperty("user.dir") + "\\pom.xml");
+        File file = new File(System.getProperty("user.dir") + "\\VID_20220105_192600.mp4");
 
         //开始下载位置
         long startByte = 0;
