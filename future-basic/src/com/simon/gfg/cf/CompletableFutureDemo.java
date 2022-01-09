@@ -1,8 +1,6 @@
 package com.simon.gfg.cf;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 // https://www.callicoder.com/java-8-completablefuture-tutorial/
 public class CompletableFutureDemo {
@@ -36,7 +34,20 @@ public class CompletableFutureDemo {
 
 //        doRunAsync();
 
-        doSupplierAsync();
+//        doSupplierAsync();
+
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+        CompletableFuture<String> future = CompletableFuture.supplyAsync(()->{
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+            return "Result of the asynchronous computation";
+        }, executor);
+        System.out.println(future.get());
+
+
     }
 
     private static void doSupplierAsync() throws InterruptedException, ExecutionException {
