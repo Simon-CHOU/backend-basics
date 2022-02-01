@@ -68,6 +68,8 @@ https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFut【
   - 比 Future 强在异常处理、多个组合一起用 
   - runAsync() 没有返回值
   - supplyAsync() 有返回值
-  - Executor 配合使用，runAsync、supplyAsync 都有 Executor 入参
+  - Executor 配合使用，自定义线程池，runAsync、supplyAsync 都有 Executor 入参
+  - CompletableFuture.get() 方法是阻塞的，需要等Future结果，这与“异步返回”初衷相悖
+  - thenApply(), thenAccept() and thenRun() 不阻塞地异步调用
 - [Guide To CompletableFuture](https://www.baeldung.com/java-completablefuture)
 - [What is CompletableFuture?](https://www.javatpoint.com/completablefuture-in-java)

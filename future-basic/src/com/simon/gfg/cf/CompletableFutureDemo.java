@@ -36,6 +36,26 @@ public class CompletableFutureDemo {
 
 //        doSupplierAsync();
 
+//        doSupplyAsyncWithExecutor();
+
+        CompletableFuture<String> whatsYourNameFuture = CompletableFuture.supplyAsync(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+            return "Rajeev";
+        });
+
+        CompletableFuture<String> greetingFuture = whatsYourNameFuture.thenApply(name -> {
+            return "Hello " + name;
+        });
+
+        System.out.println(greetingFuture.get());
+
+    }
+
+    private static void doSupplyAsyncWithExecutor() throws InterruptedException, ExecutionException {
         ExecutorService executor = Executors.newFixedThreadPool(10);
         CompletableFuture<String> future = CompletableFuture.supplyAsync(()->{
             try {
@@ -46,8 +66,6 @@ public class CompletableFutureDemo {
             return "Result of the asynchronous computation";
         }, executor);
         System.out.println(future.get());
-
-
     }
 
     private static void doSupplierAsync() throws InterruptedException, ExecutionException {
