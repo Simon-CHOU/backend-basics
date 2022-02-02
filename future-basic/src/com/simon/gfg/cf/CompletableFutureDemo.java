@@ -38,21 +38,25 @@ public class CompletableFutureDemo {
 
 //        doSupplyAsyncWithExecutor();
 
-        CompletableFuture<String> whatsYourNameFuture = CompletableFuture.supplyAsync(() -> {
+        CompletableFuture<String> welcomeText = CompletableFuture.supplyAsync(() -> {
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
                 throw new IllegalStateException(e);
             }
             return "Rajeev";
-        });
-
-        CompletableFuture<String> greetingFuture = whatsYourNameFuture.thenApply(name -> {
+        }).thenApply(name->{
             return "Hello " + name;
+        }).thenApply(greeting ->{
+            return greeting +",Welcome to the CalliCoder Blog";
         });
 
-        System.out.println(greetingFuture.get());
+//        CompletableFuture<String> greetingFuture = whatsYourNameFuture.thenApply(name -> {
+//            return "Hello " + name;
+//        });
 
+//        System.out.println(greetingFuture.get());
+        System.out.println(welcomeText.get());
     }
 
     private static void doSupplyAsyncWithExecutor() throws InterruptedException, ExecutionException {
