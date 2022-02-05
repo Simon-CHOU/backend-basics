@@ -49,10 +49,17 @@ public class CompletableFutureDemo {
 
 //        doThenApply();
 
+//        CompletableFuture.supplyAsync(()->{
+//            return getProductDetail(1L);
+//        }).thenAccept(product->{
+//            System.out.println("Got product detail from remote service  "+product.name);
+//        });
+
         CompletableFuture.supplyAsync(()->{
-            return getProductDetail(1L);
-        }).thenAccept(product->{
-            System.out.println("Got product detail from remote service  "+product.name);
+            System.out.println("then Return example");
+            return "a:";// 这个return 好像没什么用
+        }).thenRun(()->{
+            System.out.println("Computation Finished.");
         });
     }
     private static Product getProductDetail(Long productId) {
