@@ -4,6 +4,15 @@ import java.util.concurrent.*;
 
 // https://www.callicoder.com/java-8-completablefuture-tutorial/
 public class CompletableFutureDemo {
+    static class Product {
+        public Long id;
+        public String name;
+
+        public Product(Long id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+    }
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
 //        CompletableFuture<String> completableFuture = new CompletableFuture<String>();
@@ -38,6 +47,19 @@ public class CompletableFutureDemo {
 
 //        doSupplyAsyncWithExecutor();
 
+//        doThenApply();
+
+        CompletableFuture.supplyAsync(()->{
+            return getProductDetail(1L);
+        }).thenAccept(product->{
+            System.out.println("Got product detail from remote service  "+product.name);
+        });
+    }
+    private static Product getProductDetail(Long productId) {
+        return new Product(1L,"Simon");
+    }
+
+    private static void doThenApply() throws InterruptedException, ExecutionException {
         CompletableFuture<String> welcomeText = CompletableFuture.supplyAsync(() -> {
             try {
                 TimeUnit.SECONDS.sleep(1);
