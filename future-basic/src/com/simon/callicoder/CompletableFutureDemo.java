@@ -1,6 +1,9 @@
 package com.simon.callicoder;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 // https://www.callicoder.com/java-8-completablefuture-tutorial/
 public class CompletableFutureDemo {
@@ -66,7 +69,45 @@ public class CompletableFutureDemo {
 
 //        combineTwoCompletableFutureWithThenCompose();
 
-        combineTwoCompletableFutureWithThenCombine();
+//        combineTwoCompletableFutureWithThenCombine();
+
+        // combine multiple CompletableFuture together: allOf anyOf
+        // allOf 待全部完成后，合并并行的诸多结果
+        List<String> webPageLinks = Arrays.asList("a","b");
+        // Download contents of all the web pages asynchronously
+        List<CompletableFuture<String>> pageContentFutures =  webPageLinks.stream()
+                .map(webPageLink -> downloadWebPage(webPageLink))
+                .collect(Collectors.toList());
+        //create a combine Future using allOf
+        CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+                pageContentFutures.toArray(new CompletableFuture[pageContentFutures.size()])
+        );
+        CompletableFuture<List<String>> allPageContentFuture = allFutures.thenApply(v->{
+            return pageContentFutures.stream()
+                    .map(pageContentFuture-> pageContentFuture.join())
+                    .collect(Collectors.toList());
+        });// since we're calling future.join() when all the futures are complete, we're not blocking anywhere
+        //join vs get: .join() throws an unchecked exception if the underlying CompletableFuture completes exceptionally
+
+        //处理结果
+        // count the number of web page having the "CompletableFuture" keyword.
+        CompletableFuture<Long> countFuture = allPageContentFuture.thenApply(pageContents ->{
+            return pageContents.stream()
+                    .filter(pageContent -> pageContent.contains("CompletableFuture"))
+                    .count();
+        });
+        System.out.println("Number of Web Pages having CompletableFuture keyword - " +
+                countFuture.get());
+        // anyOf
+
+
+    }
+
+    private static CompletableFuture<String> downloadWebPage(String pageLink){
+        return CompletableFuture.supplyAsync(()->{
+            //Code to download and return the web page's content
+            return "html";
+        });
     }
 
     private static void combineTwoCompletableFutureWithThenCombine() throws InterruptedException, ExecutionException {
