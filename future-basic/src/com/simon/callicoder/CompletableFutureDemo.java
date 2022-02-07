@@ -1,4 +1,4 @@
-package com.simon.gfg.cf;
+package com.simon.callicoder;
 
 import java.util.concurrent.*;
 
@@ -62,6 +62,33 @@ public class CompletableFutureDemo {
 //            System.out.println("Computation Finished.");
 //        });
 
+//        doThenApplyAsync();
+
+        //combine two completableFutures
+        CompletableFuture<CompletableFuture<Double>> result = getUserDetail("Jamie")
+                .thenApply(user -> getCreditRating(user));
+        System.out.println(result.get().get());//1.1
+        // final result to be a top-level Future
+        // If your callback fucntion returns a CompletableFuture,and you wang a flattened
+        // result from the CompletableFuture chain (which in most cases you would), then use thenCompose()
+        CompletableFuture<Double> res = getUserDetail("James")
+                .thenCompose(user -> getCreditRating(user));
+        System.out.println(res.get());//1.1
+
+    }
+
+    static CompletableFuture<User> getUserDetail(String userId) {
+        return CompletableFuture.supplyAsync(()->{
+            return UserService.getUserDetail(userId);
+        });
+    }
+    static CompletableFuture<Double> getCreditRating(User user){
+        return CompletableFuture.supplyAsync(()->{
+            return CreditRatingService.getCreditRatingUser(user);
+        });
+    }
+
+    private static void doThenApplyAsync() {
         CompletableFuture.supplyAsync(()->{
             try {
                 TimeUnit.SECONDS.sleep(1);
@@ -89,14 +116,14 @@ public class CompletableFutureDemo {
             return "Processed Result";
         });
         // execute in a thread obtained from the Executor's thread pool
-       Executor executor = Executors.newFixedThreadPool(2); // 有了executor后，Thread.currentThread().getName()就能打印出来
-       CompletableFuture.supplyAsync(()->{
-           return "Some Result";
-        }).thenApplyAsync(result->{
-            return "Process Result";
-        }, executor);
-
+        Executor executor = Executors.newFixedThreadPool(2); // 有了executor后，Thread.currentThread().getName()就能打印出来
+        CompletableFuture.supplyAsync(()->{
+            return "Some Result";
+         }).thenApplyAsync(result->{
+             return "Process Result";
+         }, executor);
     }
+
     private static Product getProductDetail(Long productId) {
         return new Product(1L,"Simon");
     }
