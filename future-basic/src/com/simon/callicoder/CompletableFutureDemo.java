@@ -64,6 +64,38 @@ public class CompletableFutureDemo {
 
 //        doThenApplyAsync();
 
+//        simpleCombineTwoCompletableFuture();
+
+        //combine two independent futures user thenCombine()
+        // thenCompose是串联，thenCombine是并联
+        System.out.println("Retrieving weight.");
+        CompletableFuture<Double> weightInKgFuture = CompletableFuture.supplyAsync(()->{
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+            return 65.0;
+        });
+        System.out.println("Retrieving height.");
+        CompletableFuture<Double> heightInCmFuture = CompletableFuture.supplyAsync(()->{
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+            return 177.8;
+        });
+        System.out.println("Calculation BMI");
+        CompletableFuture<Double> combineFuture = weightInKgFuture
+                .thenCombine(heightInCmFuture, (weightKg, heightCm)->{
+                    Double heightInMeter  = heightCm/100;
+                    return weightKg /(heightInMeter* heightInMeter);
+                });
+        System.out.println("Your BMI is - " + combineFuture.get());
+    }
+
+    private static void simpleCombineTwoCompletableFuture() throws InterruptedException, ExecutionException {
         //combine two completableFutures
         CompletableFuture<CompletableFuture<Double>> result = getUserDetail("Jamie")
                 .thenApply(user -> getCreditRating(user));
@@ -74,7 +106,6 @@ public class CompletableFutureDemo {
         CompletableFuture<Double> res = getUserDetail("James")
                 .thenCompose(user -> getCreditRating(user));
         System.out.println(res.get());//1.1
-
     }
 
     static CompletableFuture<User> getUserDetail(String userId) {
