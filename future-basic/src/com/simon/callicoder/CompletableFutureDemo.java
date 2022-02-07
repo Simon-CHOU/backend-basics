@@ -64,8 +64,12 @@ public class CompletableFutureDemo {
 
 //        doThenApplyAsync();
 
-//        simpleCombineTwoCompletableFuture();
+//        combineTwoCompletableFutureWithThenCompose();
 
+        combineTwoCompletableFutureWithThenCombine();
+    }
+
+    private static void combineTwoCompletableFutureWithThenCombine() throws InterruptedException, ExecutionException {
         //combine two independent futures user thenCombine()
         // thenCompose是串联，thenCombine是并联
         System.out.println("Retrieving weight.");
@@ -95,7 +99,7 @@ public class CompletableFutureDemo {
         System.out.println("Your BMI is - " + combineFuture.get());
     }
 
-    private static void simpleCombineTwoCompletableFuture() throws InterruptedException, ExecutionException {
+    private static void combineTwoCompletableFutureWithThenCompose() throws InterruptedException, ExecutionException {
         //combine two completableFutures
         CompletableFuture<CompletableFuture<Double>> result = getUserDetail("Jamie")
                 .thenApply(user -> getCreditRating(user));
