@@ -55,12 +55,47 @@ public class CompletableFutureDemo {
 //            System.out.println("Got product detail from remote service  "+product.name);
 //        });
 
+//        CompletableFuture.supplyAsync(()->{
+//            System.out.println("then Return example");
+//            return "a:";// 这个return 好像没什么用
+//        }).thenRun(()->{
+//            System.out.println("Computation Finished.");
+//        });
+
         CompletableFuture.supplyAsync(()->{
-            System.out.println("then Return example");
-            return "a:";// 这个return 好像没什么用
-        }).thenRun(()->{
-            System.out.println("Computation Finished.");
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+            return "Some Result";
+        }).thenApply(result -> {
+            /*
+              Executed in the same thread where the supplyAsync() task is executed
+              or in the main thread if the supplyAsync() task completes immediately(try removing sleep() call to verify)
+             */
+            return "Processed Result";
         });
+        // use async callbacks to have more control over the thread
+        CompletableFuture.supplyAsync(()->{
+            System.out.println("Some Result");//打印出来了
+            System.out.println("Some Result" +Thread.currentThread().getName());//打印不出来,
+            return "Some Result";
+        }).thenApplyAsync(result -> {
+            /*
+              Executed in a different thread from ForkJoinPool.commonPool()
+             */
+            System.out.println("Processed Result " + Thread.currentThread().getName());//打印不出来
+            return "Processed Result";
+        });
+        // execute in a thread obtained from the Executor's thread pool
+       Executor executor = Executors.newFixedThreadPool(2); // 有了executor后，Thread.currentThread().getName()就能打印出来
+       CompletableFuture.supplyAsync(()->{
+           return "Some Result";
+        }).thenApplyAsync(result->{
+            return "Process Result";
+        }, executor);
+
     }
     private static Product getProductDetail(Long productId) {
         return new Product(1L,"Simon");
