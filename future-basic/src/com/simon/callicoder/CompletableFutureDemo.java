@@ -72,6 +72,14 @@ public class CompletableFutureDemo {
 //        combineTwoCompletableFutureWithThenCombine();
 
         // combine multiple CompletableFuture together: allOf anyOf
+//        combineMultiCompletableFutureWithAllOf();
+        // anyOf
+
+
+
+    }
+
+    private static void combineMultiCompletableFutureWithAllOf() throws InterruptedException, ExecutionException {
         // allOf 待全部完成后，合并并行的诸多结果
         List<String> webPageLinks = Arrays.asList("a","b");
         // Download contents of all the web pages asynchronously
@@ -98,9 +106,6 @@ public class CompletableFutureDemo {
         });
         System.out.println("Number of Web Pages having CompletableFuture keyword - " +
                 countFuture.get());
-        // anyOf
-
-
     }
 
     private static CompletableFuture<String> downloadWebPage(String pageLink){
