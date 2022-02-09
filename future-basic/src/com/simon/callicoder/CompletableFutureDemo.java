@@ -73,10 +73,41 @@ public class CompletableFutureDemo {
 
         // combine multiple CompletableFuture together: allOf anyOf
 //        combineMultiCompletableFutureWithAllOf();
+        combineMultiCompletableFutureWithAnyOf();
+
+
+    }
+
+    private static void combineMultiCompletableFutureWithAnyOf() throws InterruptedException, ExecutionException {
         // anyOf
-
-
-
+        CompletableFuture<String> future1 = CompletableFuture.supplyAsync(()->{
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+            return "Result of Future1";
+        });
+        CompletableFuture<String> future2 = CompletableFuture.supplyAsync(()->{
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+            return "Result of Future2";
+        });
+        CompletableFuture<String> future3 = CompletableFuture.supplyAsync(()->{
+            try {
+                TimeUnit.SECONDS.sleep(3);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+            return "Result of Future3";
+        });
+        CompletableFuture<Object> anyOfFuture = CompletableFuture.anyOf(future1, future2, future3);
+        System.out.println(anyOfFuture.get()); //Result of Future2
+        // that if you have CompletableFutures that return results of different types,
+        // then you won’t know the type of your final CompletableFuture.
     }
 
     private static void combineMultiCompletableFutureWithAllOf() throws InterruptedException, ExecutionException {
