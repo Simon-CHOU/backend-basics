@@ -73,9 +73,67 @@ public class CompletableFutureDemo {
 
         // combine multiple CompletableFuture together: allOf anyOf
 //        combineMultiCompletableFutureWithAllOf();
-        combineMultiCompletableFutureWithAnyOf();
+//        combineMultiCompletableFutureWithAnyOf();
 
+        CompletableFuture.supplyAsync(()->{
+            // Code which might throw exception
+            return "Some result";
+        }).thenApply(result -> {
+            return "processed result";
+        }).thenApply(result -> {
+            return "result after further processing";
+        }).thenAccept(result ->{
+            // do something with the final result.
+        });
+        //  前面一步有异常，后面就不会运行
 
+//        handleExceptionUsingExceptionallyCallback();
+        handleExceptionUsingHandle();
+
+    }
+
+    private static void handleExceptionUsingHandle() throws InterruptedException, ExecutionException {
+        Integer age = -1;
+        CompletableFuture<String> maturityFuture = CompletableFuture.supplyAsync(()->{
+            if(age < 0) {
+                throw new IllegalArgumentException("Age can not be negative");
+            }
+            if(age > 18) {
+                return "Adult";
+            } else {
+                return "Child";
+            }
+        }).handle((res, ex)->{
+            // If an exception occurs, then the res argument will be null,
+            // otherwise, the ex argument will be null.
+            if(ex != null) {
+                System.out.println("Oops! We have an exception - " + ex.getMessage());
+                return "Unknown!";
+            }
+            return res;
+        });
+        System.out.println("Maturity : " + maturityFuture.get());
+    }
+
+    private static void handleExceptionUsingExceptionallyCallback() throws InterruptedException, ExecutionException {
+        // 自定义处理异常
+        Integer age = -1;
+        CompletableFuture<String> maturityFuture = CompletableFuture.supplyAsync(()->{
+            if(age < 0) {
+                throw new IllegalArgumentException("Age can not be negative");
+            }
+            if(age > 18) {
+                return "Adult";
+            } else {
+                return "Child";
+            }
+        }).exceptionally(ex->{
+            System.out.println("Oops! We have an exception - " + ex.getMessage());
+            return "Unknown!";
+        });
+        System.out.println("Maturity : " + maturityFuture.get());
+        //Oops! We have an exception - java.lang.IllegalArgumentException: Age can not be negative
+        //Maturity : Unknown!
     }
 
     private static void combineMultiCompletableFutureWithAnyOf() throws InterruptedException, ExecutionException {
