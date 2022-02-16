@@ -1,5 +1,14 @@
 package com.simon.callicoder.exec;
 
+/**
+ * Thread vs Runnable
+ * 结论：该用Runnable
+ * Java 单继承，继承了Thread不能继承别的
+ * 继承：扩展父类的功能。但是如果继承Thread，我只是想用run()方法。继承这种用法就不合理。
+ * 综上，用 Runnable（而且Runnable Lambda创建可以让代码更紧凑）
+ *
+ * ref: https://www.callicoder.com/java-multithreading-thread-and-runnable-tutorial/
+ */
 public class ThreadExample extends Thread {
 
     @Override
