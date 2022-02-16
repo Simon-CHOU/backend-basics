@@ -45,6 +45,8 @@ prerequisite:
 
 [Thread Pools](https://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html)
 
+[Executor Service & Thread Pool](https://www.callicoder.com/java-executor-service-and-thread-pool-tutorial/)
+- [Java Concurrency API](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/package-summary.html)
 Using worker threads minimizes the overhead due to thread creation.
 
 ## Structuring Concurrent Applications
