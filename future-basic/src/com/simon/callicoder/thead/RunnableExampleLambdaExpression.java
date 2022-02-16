@@ -1,15 +1,12 @@
-package com.simon.callicoder.exec;
+package com.simon.callicoder.thead;
 
-public class RunnableExampleAnonymousClass {
+public class RunnableExampleLambdaExpression {
 
     public static void main(String[] args) {
         System.out.println("Inside : " + Thread.currentThread().getName());
         System.out.println("Creating Runnable... ");
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                System.out.println("Insider: " + Thread.currentThread().getName());
-            }
+        Runnable runnable = () -> {
+            System.out.println("Insider: " + Thread.currentThread().getName());
         };
 
         System.out.println("Creating Thread...");
