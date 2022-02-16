@@ -1,4 +1,4 @@
-package com.simon.callicoder;
+package com.simon.callicoder.cplf;
 
 public class CreditRatingService {
     public static Double getCreditRatingUser(User user) {

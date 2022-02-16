@@ -1,4 +1,4 @@
-package com.simon.callicoder;
+package com.simon.callicoder.cplf;
 
 public class User {
     private String id;

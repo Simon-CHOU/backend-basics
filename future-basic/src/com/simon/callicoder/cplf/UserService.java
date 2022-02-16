@@ -1,4 +1,4 @@
-package com.simon.callicoder;
+package com.simon.callicoder.cplf;
 
 public class UserService {
     public static User getUserDetail(String userId) {
