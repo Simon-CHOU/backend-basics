@@ -4,6 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
 
+/**
+ * 注意和  CompletableFuture.allOf 对比
+ */
 public class InvokeAllExample {
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         ExecutorService executorService = Executors.newFixedThreadPool(5);
