@@ -23,10 +23,13 @@ public class FutureCancelExample {
                 future.cancel(true);
             }
         }
-
-        System.out.println("Task completed! Retrieving the result");
-        String result =  future.get();
-        System.out.println(result);
+        if(!future.isCancelled()) {
+            System.out.println("Task completed! Retrieving the result");
+            String result = future.get();
+            System.out.println(result);
+        }else {
+            System.out.println("Task was cancelled");
+        }
 
         executorService.shutdown();
 //        (elapseTimeSec > 1)
