@@ -14,10 +14,18 @@ class SynchronizedCounter {
      * synchronized关键字确保在同一时间只有一个线程可以输入increment()方法。
      * The synchronized keyword makes sure that only one thread can enter the increment() method at one time.
      */
-    public synchronized void increment() {
-        count++;
-    }
+//    public synchronized void increment() {
+//        count++;
+//    }
+    public void increment() {
+        // Synchronized Block -
 
+        // Acquire Lock
+        synchronized (this) {
+            count++;
+        }
+        // Release Lock
+    } //The idea of allowing a thread to acquire the same lock more than once is called Reentrant Synchronization.
     public int getCount() {
         return count;
     }
