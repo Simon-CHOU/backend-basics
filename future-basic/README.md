@@ -79,3 +79,8 @@ https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFut【
   - thenApply(), thenAccept() and thenRun() 不阻塞地异步调用
 - [Guide To CompletableFuture](https://www.baeldung.com/java-completablefuture)
 - [What is CompletableFuture?](https://www.javatpoint.com/completablefuture-in-java)
+
+## Synchronization
+- [Callicoder: Java Concurrency issues and Thread Synchronization](https://www.callicoder.com/java-concurrency-issues-and-thread-synchronization/)
+  - Thread interference errors (Race Conditions)
+  - Memory consistency errors
