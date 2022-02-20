@@ -87,3 +87,4 @@ https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFut【
     - [Critical section](https://en.wikipedia.org/wiki/Critical_section)  the section of code where shared variable
   - Memory consistency errors
   - synchronized: unnecessary synchronization  may lead to  [deadlock](https://en.wikipedia.org/wiki/Deadlock) and [starvation](https://en.wikipedia.org/wiki/Starvation_(computer_science))
+- [Locks and Atomic Variable](https://www.callicoder.com/java-locks-and-atomic-variables-tutorial/)
