@@ -28,6 +28,11 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.30</version>
+        </dependency>
     </dependencies>
     <profiles>
         <profile>
@@ -61,6 +66,15 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-resources-plugin</artifactId>-->
+<!--                <version>3.2.0</version>-->
+<!--                <configuration>-->
+<!--                    <delimiters>@</delimiters>-->
+<!--                    <useDefaultDelimiters>false</useDefaultDelimiters>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 
