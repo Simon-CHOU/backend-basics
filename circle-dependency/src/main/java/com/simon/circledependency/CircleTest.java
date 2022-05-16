@@ -1,6 +1,7 @@
 package com.simon.circledependency;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CircleTest {
     private final static Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
 
-    public static void main(String[] args) throws InstantiationException, IllegalAccessException {
+    public static void main(String[] args) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         System.out.println(getBean(B.class).getA());
         System.out.println(getBean(A.class).getB());
     }
@@ -27,13 +28,13 @@ public class CircleTest {
      * @throws InstantiationException
      * @throws IllegalAccessException
      */
-    private static <T> T getBean(Class<T> beanClass) throws InstantiationException, IllegalAccessException {
+    private static <T> T getBean(Class<T> beanClass) throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         String beanName = beanClass.getSimpleName().toLowerCase();
         if (singletonObjects.containsKey(beanName)) {
             return (T) singletonObjects.get(beanName);
         }
         // 实例化对象入缓存
-        Object obj = beanClass.newInstance();
+        Object obj = beanClass.getDeclaredConstructor().newInstance();
         singletonObjects.put(beanName, obj);
         // 属性填充补全对象
         Field[] fields = obj.getClass().getDeclaredFields();
