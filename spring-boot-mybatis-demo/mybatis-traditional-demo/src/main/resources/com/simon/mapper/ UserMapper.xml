@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.simon.mapper.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.simon.entity.User">
+        <id column="id" property="id" javaType="JDBCType.Integer"/>
+        <result column="name" property="name"/>
+        <result column="email" property="email"/>
+    </resultMap>
+
+    <select id="findAllUsers" resultMap="UserResultMap">
+        select id, name, email from users
+    </select>
+<!--        <select id="findAllUsers" resultType="com.simon.entity.User">-->
+<!--            select id, name, email from users-->
+<!--        </select>-->
+
+    <select id="findUserById" resultMap="UserResultMap">
+        select id, name, email from users WHERE id=#{id}
+    </select>
+
+    <insert id="insertUser" parameterType="com.simon.entity.User" useGeneratedKeys="true" keyProperty="id">
+        insert into users(name,email) values(#{name},#{email})
+    </insert>
+</mapper>
