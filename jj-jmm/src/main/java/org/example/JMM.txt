@@ -1,0 +1,36 @@
+=== Java Memory Model 演示 ===
+
+场景1：共享Runnable对象，但MyObject在run()中创建
+Thread-2 - MyObject: org.example.JmmDemoMain$MyObject@6307043d
+Thread-1 - MyObject: org.example.JmmDemoMain$MyObject@48286aec
+Thread-1 - Count: 1706880
+Thread-2 - Count: 1637472
+结果：虽然共享Runnable对象，但MyObject地址不同（每次run()都创建新对象）
+count值相同：因为两个线程共享同一个Runnable实例的count字段
+
+场景2：不同的Runnable对象
+Thread-3 - MyObject: org.example.JmmDemoMain$MyObject@5371971e
+Thread-4 - MyObject: org.example.JmmDemoMain$MyObject@652d3a78
+Thread-4 - Count: 1000000
+Thread-3 - Count: 1000000
+结果：不同Runnable对象，MyObject地址不同，count值都是1000000（各自独立）
+
+场景3：共享同一个MyObject实例
+Thread-6 - Shared MyObject: org.example.JmmDemoMain$MyObject@46090ba1
+Thread-5 - Shared MyObject: org.example.JmmDemoMain$MyObject@46090ba1
+Thread-5 - Count: 1000000
+Thread-6 - Count: 1000000
+结果：MyObject地址相同（共享同一个对象实例）
+
+场景4：共享Runnable对象和MyObject对象
+Thread-7 - Shared MyObject: org.example.JmmDemoMain$MyObject@df94809
+Thread-8 - Shared MyObject: org.example.JmmDemoMain$MyObject@df94809
+Thread-8 - Count: 1568613
+Thread-7 - Count: 1749058
+结果：MyObject地址相同，count值相同（共享Runnable实例的count字段）
+
+=== JMM 原理总结 ===
+1. 对象在堆内存中创建，线程栈中存储对象引用
+2. 多个线程可以共享同一个对象实例（通过引用）
+3. 每个线程有自己的栈空间，但可以访问共享的堆对象
+4. 实例变量在对象中，被共享；局部变量在线程栈中，不被共享
