@@ -1,7 +1,7 @@
 package com.simon.mastering_spring_data_jpa.dao;
 
 import com.simon.mastering_spring_data_jpa.convertor.GenderConverter;
-import com.simon.mastering_spring_data_jpa.dto.Gender;
+import com.simon.mastering_spring_data_jpa.enums.Gender;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -32,7 +32,7 @@ public class Student {
     private String email;
     @Column(name = "age")
     private Integer age;
-    @Column(name = "gender" )
-    @Convert(converter = GenderConverter.class)  // 关键修改：将 @Converter 改为 @Convert
+    @Column(name = "gender", columnDefinition = "CHAR(1)")
+    @Convert(converter = GenderConverter.class)
     private Gender gender;
 }
