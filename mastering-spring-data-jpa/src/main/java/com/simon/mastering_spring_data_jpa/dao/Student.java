@@ -1,6 +1,6 @@
 package com.simon.mastering_spring_data_jpa.dao;
 
-import com.simon.mastering_spring_data_jpa.GenderConverter;
+import com.simon.mastering_spring_data_jpa.convertor.GenderConverter;
 import com.simon.mastering_spring_data_jpa.dto.Gender;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;

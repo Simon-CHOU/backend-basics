@@ -1,4 +1,4 @@
-package com.simon.mastering_spring_data_jpa;
+package com.simon.mastering_spring_data_jpa.convertor;
 
 import com.simon.mastering_spring_data_jpa.dto.Gender;
 import jakarta.persistence.AttributeConverter;
