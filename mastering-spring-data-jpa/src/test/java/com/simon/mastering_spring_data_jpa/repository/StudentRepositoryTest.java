@@ -8,6 +8,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @SpringBootTest
 class StudentRepositoryTest {
@@ -43,5 +45,14 @@ class StudentRepositoryTest {
     void test_findByEmailRawSqlNative() {
         List<Student> students = studentRepository.findByEmailRawSqlNative("xiaoli@example.com");
         assertEquals(1, students.size());
+    }
+
+    @Test
+    void test_findByEmailRawSqlPartial() {
+        List<Student> students = studentRepository.findByEmailRawSqlPartial("xiaoli@example.com");
+        assertNotNull(students.get(0).getName());
+        assertNotNull(students.get(0).getEmail());
+        assertNull(students.get(0).getAge());
+        assertNull(students.get(0).getGender());
     }
 }

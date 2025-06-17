@@ -35,4 +35,9 @@ public class Student {
     @Column(name = "gender", columnDefinition = "CHAR(1)")
     @Convert(converter = GenderConverter.class)
     private Gender gender;
+
+    public Student(String name, String email) {
+        this.name = name;
+        this.email = email;
+    }
 }

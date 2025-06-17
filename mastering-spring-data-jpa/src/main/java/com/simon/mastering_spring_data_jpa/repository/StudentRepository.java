@@ -21,4 +21,7 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
 
     @Query(value = "select * from students stu where email = :email", nativeQuery = true) //students 是表明
     List<Student> findByEmailRawSqlNative(@Param("email") String email);
+
+    @Query("select new Student(name, email) from Student where email = :email") // 查询部分字段，需有对应构造方法
+    List<Student> findByEmailRawSqlPartial(@Param("email") String email);
 }
