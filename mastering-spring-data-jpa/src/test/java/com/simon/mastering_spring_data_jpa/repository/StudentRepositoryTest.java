@@ -15,14 +15,27 @@ class StudentRepositoryTest {
     private StudentRepository studentRepository;
 
     @Test
-    public void findByEmail() {
+    public void test_findByEmail() {
         List<Student> students = studentRepository.findByEmail("simon@gmail.com");
         assertEquals(1, students.size());
     }
 
     @Test
-    public void findByAgeBetween() {
+    public void test_findByAgeBetween() {
         List<Student> students = studentRepository.findByAgeBetween(18, 20);
         assertEquals(6, students.size());
+    }
+
+
+    @Test
+    public void test_findByNameStartingWith() {
+        List<Student> students = studentRepository.findByNameStartingWith("张");
+        assertEquals(1, students.size());
+    }
+
+    @Test
+    void test_findByEmailRawSql() {
+        List<Student> students = studentRepository.findByEmailRawSql("xiaoli@example.com");
+        assertEquals(1, students.size());
     }
 }
