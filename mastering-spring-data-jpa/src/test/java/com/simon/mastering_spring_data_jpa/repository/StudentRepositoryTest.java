@@ -38,4 +38,10 @@ class StudentRepositoryTest {
         List<Student> students = studentRepository.findByEmailRawSql("xiaoli@example.com");
         assertEquals(1, students.size());
     }
+
+    @Test
+    void test_findByEmailRawSqlNative() {
+        List<Student> students = studentRepository.findByEmailRawSqlNative("xiaoli@example.com");
+        assertEquals(1, students.size());
+    }
 }

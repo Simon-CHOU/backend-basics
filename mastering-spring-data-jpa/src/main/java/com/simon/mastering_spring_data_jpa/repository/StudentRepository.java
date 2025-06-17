@@ -16,6 +16,9 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
 
     List<Student> findByNameStartingWith(String namePrefix);
     //select by custom sql/jqpl
-    @Query("select stu from student stu where email = :email")
+    @Query("select stu from Student stu where email = :email") // Student是对象名
     List<Student> findByEmailRawSql(@Param("email") String email);
+
+    @Query(value = "select * from students stu where email = :email", nativeQuery = true) //students 是表明
+    List<Student> findByEmailRawSqlNative(@Param("email") String email);
 }
