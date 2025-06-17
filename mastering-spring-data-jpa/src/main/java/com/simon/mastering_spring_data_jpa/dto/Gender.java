@@ -1,7 +1,6 @@
-package dto;
+package com.simon.mastering_spring_data_jpa.dto;
 
 
-import java.lang.ScopedValue;
 import java.util.Optional;
 
 public enum Gender {

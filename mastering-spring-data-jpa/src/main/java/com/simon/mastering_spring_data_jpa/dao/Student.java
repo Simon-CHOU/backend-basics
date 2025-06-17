@@ -1,9 +1,9 @@
-package dao;
+package com.simon.mastering_spring_data_jpa.dao;
 
-import convertor.GenderConverter;
+import com.simon.mastering_spring_data_jpa.GenderConverter;
+import com.simon.mastering_spring_data_jpa.dto.Gender;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
-import jakarta.persistence.Converter;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,8 +31,8 @@ public class Student {
     @Column(name = "email")
     private String email;
     @Column(name = "age")
-    private String age;
+    private Integer age;
     @Column(name = "gender" )
     @Convert(converter = GenderConverter.class)  // 关键修改：将 @Converter 改为 @Convert
-    private String gender;
+    private Gender gender;
 }
