@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
@@ -111,5 +112,33 @@ class StudentRepositoryTest {
         assertEquals(2, foundStudents.getSize());
         assertEquals(6, foundStudents.getTotalElements());
         assertEquals(1, foundStudents.getNumber());
+    }
+
+    @Test
+    void test_dynamicQueryRanking() {
+        StudentDTO searchCriteria = StudentDTO.builder()
+                .minAge(10)
+                .maxAge(20)
+                .build();
+
+        Specification<Student> specification = buildStudentSpecification(searchCriteria);
+        List<Student> foundStudents = studentRepository.findAll(specification, Sort.by("id")); // 排序查询，全表查询
+        assertEquals(6, foundStudents.size());
+    }
+
+    @Test
+    void test_dynamicQueryPageRanking() {
+        StudentDTO searchCriteria = StudentDTO.builder()
+                .minAge(10)
+                .maxAge(20)
+                .build();
+
+        PageRequest pageRequest = PageRequest.of(1, 2, Sort.by("id")); // 分页排序
+        Specification<Student> specification = buildStudentSpecification(searchCriteria);
+        Page<Student> foundStudents = studentRepository.findAll(specification, pageRequest);
+        assertEquals(2, foundStudents.getSize());
+        assertEquals(6, foundStudents.getTotalElements());
+        assertEquals(1, foundStudents.getNumber());
+        assertEquals(5, foundStudents.getContent().get(1).getId());
     }
 }
