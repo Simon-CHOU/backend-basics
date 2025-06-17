@@ -6,6 +6,8 @@ import jakarta.persistence.criteria.Predicate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
@@ -93,5 +95,21 @@ class StudentRepositoryTest {
 
             return query.where(predicates.toArray(new Predicate[0])).getRestriction();
         };
+    }
+
+    @Test
+    void test_dynamicQueryPage() {
+        StudentDTO searchCriteria = StudentDTO.builder()
+                .minAge(10)
+                .maxAge(20)
+                .build();
+
+        PageRequest pageRequest = PageRequest.of(1, 2);// pageNumber: zero-based page number, must not be negative.
+        Specification<Student> specification = buildStudentSpecification(searchCriteria);
+        Page<Student> foundStudents = studentRepository.findAll(specification, pageRequest);
+        // total 6, page size 2, page number 1
+        assertEquals(2, foundStudents.getSize());
+        assertEquals(6, foundStudents.getTotalElements());
+        assertEquals(1, foundStudents.getNumber());
     }
 }
