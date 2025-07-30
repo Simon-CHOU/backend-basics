@@ -103,3 +103,8 @@ JDON002 你提到在接口里面加缓存提高性能，请问你怎么确认该
 数据特征分析（What to Cache） 统计频率
 务场景评估（When to Cache） 业务一致性要求强弱，越弱越适合缓存
 技术实现考量（How to Cache） 浏览器缓存、CDN缓存、应用层缓存、数据库缓存
+
+
+JDON009 Redis常用的数据结构有哪些？zset的底层数据结构是怎样的？如果放进zset的两个元素score相同，会发生什么？
+edis五大基础数据结构 ：String、Hash、List、Set、ZSet，
+其中ZSet使用跳跃表+哈希表双重结构，当score相同时按字典序排序。
