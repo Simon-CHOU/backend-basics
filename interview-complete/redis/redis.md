@@ -74,3 +74,18 @@ graph TB
     style E fill:#FFB6C1
     style G fill:#90EE90
 ```
+
+
+TOUG004 : Redis\Redission如何实现分布式锁？
+核心结论：Redisson通过Lua脚本保证原子性，看门狗机制自动续期，实现高可用分布式锁。
+Redisson分布式锁的完整实现原理。它通过Lua脚本保证操作原子性，看门狗机制解决锁续期问题，pub/sub机制实现高效等待，是目前最成熟的Redis分布式锁解决方案.
+
+为什么不应该直接使用set字符串当成信号量的方式，实现redis 锁，
+比如
+set lock='0' ttl=略大于transaction完成的时间
+  trasaction
+set lock='1'
+
+简单SET方案存在致命的竞态条件和原子性问题，无法保证分布式锁的安全性。*思考。
+
+时间间隙，两个线程都可能获得锁。
