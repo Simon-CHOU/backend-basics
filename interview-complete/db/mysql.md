@@ -53,7 +53,7 @@ lab: 如何证明MVCC在工作。不懂MVCC会遇到哪些问题。
 JITU005 一个查询sql  where created_date between 一个时间段，已经加了索引，但效率还是不高，可能是哪些方面的原因？怎么解决？
 原因：
 索引：类型不当，*符合索引顺序，统计信息过期
-条件：范围过大、数据分布不匀，表数据量大。
+条件：范围过大、数据分布不匀（数据倾斜data skew），表数据量大。
 
 解决：
 使用覆盖索引
@@ -64,3 +64,11 @@ JITU005 一个查询sql  where created_date between 一个时间段，已经加
 慢查询日志
 性能监控
 
+
+
+JITU006 explain 进行执行计划的查询，你会关注哪些参数？去定位到性能问题呢？
+type: system > const > eq_ref > ref > range > index > ALL
+key
+rows
+extra
+filtered
