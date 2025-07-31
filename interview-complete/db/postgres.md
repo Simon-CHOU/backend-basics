@@ -14,6 +14,11 @@ PostgreSQL和MySQL有什么区别？
 lab: 根据高观点下的差异，性能、部署、迁移、集群、分库分表等选型逻辑。
 
 参考 
+
+postgre anniversary  ucberkeley
+PostgreSQL History: From Berkeley to Global Standard
+https://tech-champion.com/general/unveiling-the-history-of-postgresql-from-berkeley-to-global-standard/
+
 #去IOE#传统IT架构vs互联网架构#技术史
 https://www.zhihu.com/question/23119444
 
