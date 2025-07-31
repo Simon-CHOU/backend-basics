@@ -1,0 +1,27 @@
+# IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Gradle
+.gradle/
+build/
+
+# Spring Boot
+*.jar
+*.war
+*.ear
+
+# Ignore logs
+*.log
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore IntelliJ IDEA workspace file
+/workspace.xml
+
+# Ignore shelf file
+/shelf/
