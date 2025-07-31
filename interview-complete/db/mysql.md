@@ -489,3 +489,58 @@ lIKE 通配符位置在左
 OR 条件
 NOT != <> 操作符 （负向条件难以利用B+数索引的有序性）
 数据分布导致的优化器选择（当索引选择性过低时，优化器可能选择全表扫描）
+
+
+ZTFU022
+你讲一下数据库的回表？
+
+**回表（Table Lookup）**是指在使用非聚簇索引查询数据时，需要根据索引中的主键值再次访问聚簇索引（主表）来获取完整行数据的过程。
+
+> 非聚簇索引 vs 聚簇索引
+
+回表发生：
+**查询列不在索引中**
+```
+-- 假设在name列上有索引
+CREATE INDEX idx_name ON users(name);
+
+-- 这个查询会发生回表
+SELECT id, name, age, email FROM users WHERE name = '张三';
+```
+**使用 select "*"**
+```
+-- 这个查询必然回表
+SELECT * FROM users WHERE name = '张三';
+```
+**范围查询后的额外列获取**
+```
+-- age列有索引，但需要其他列
+SELECT id, name, age, salary FROM users WHERE age BETWEEN 25 AND 35;
+```
+> 范围查询后的额外列获取 难到不是包含在的 查询列不在索引中 的场景中吗？为什么要分开讨论？
+> 触发原因、性能影响模式、优化策略 均有不同。
+
+lab: 如何观测到dbms层面回表的发生
+
+避免回表：
+**覆盖索引（Covering Index）**
+```
+-- 创建覆盖索引
+CREATE INDEX idx_name_age_email ON users(name, age, email);
+
+-- 这个查询不会回表
+SELECT name, age, email FROM users WHERE name = '张三';
+```
+**索引下推（Index Condition Pushdown）**
+```
+-- 复合索引
+CREATE INDEX idx_name_age ON users(name, age);
+
+-- MySQL会在索引层面过滤age条件，减少回表次数
+SELECT * FROM users WHERE name LIKE '张%' AND age > 25;
+```
+**主键查询**
+```
+-- 直接使用主键，无需回表
+SELECT * FROM users WHERE id = 1;
+```
