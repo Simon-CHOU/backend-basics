@@ -87,3 +87,59 @@ B+Tree index性能下降
 渐进优化 ：从简单到复杂，逐步实施优化措施
 
 lab: 不改表结构，如何优化？
+出现selectivity下降的问题，这种问题是不是表明一开始的设计就不良？不是，日期是自然写入
+
+
+CITI014 数据库的隔离级别
+数据库隔离级别是ACID特性中**隔离性(Isolation)**的具体实现，用于控制并发事务之间的相互影响程度。它解决了多个事务同时访问数据库时可能出现的数据一致性问题。
+理解三个核心并发问题：
+
+dirty read
+```
+事务A: BEGIN -> UPDATE account SET balance=100 WHERE id=1 -> (未提交)
+事务B: BEGIN -> SELECT balance FROM account WHERE id=1 -> 读到100 -> COMMIT
+事务A: ROLLBACK
+```
+事务B读取了事务A未提交的数据，但事务A最终回滚了。
+
+non-repetable read
+```
+事务A: BEGIN -> SELECT balance FROM account WHERE id=1 -> 读到50
+事务B: BEGIN -> UPDATE account SET balance=100 WHERE id=1 -> COMMIT
+事务A: SELECT balance FROM account WHERE id=1 -> 读到100 -> COMMIT
+```
+同一事务内两次读取同一数据得到不同结果。
+
+phantom read
+```
+事务A: BEGIN -> SELECT COUNT(*) FROM account WHERE balance>50 -> 读到5条
+事务B: BEGIN -> INSERT INTO account VALUES(6, 60) -> COMMIT
+事务A: SELECT COUNT(*) FROM account WHERE balance>50 -> 读到6条 -> COMMIT
+```
+同一事务内两次范围查询得到不同的记录数。
+
+* 同样是一个事务内两次读结果不一样，non-repeatable 是值，phantom是记录数。
+为什么要分别讨论？
+
+4个隔离级别
+read uncommited
+read committed  fix ：解决脏读
+repeatable read fix ：解决不可重复读
+serializable fix ：解决幻读
+
+*注：MySQL InnoDB在RR级别下通过Gap Lock解决了幻读
+
+隔离级别的实现：
+
+锁机制
+
+共享锁(S锁): 读锁，多个事务可同时持有
+排他锁(X锁): 写锁，独占访问
+意向锁: 表级锁，提高锁检测效率
+Gap锁: 间隙锁，防止幻读
+
+MVCC
+
+原理: 为每行数据维护多个版本
+实现: 通过undo log和read view
+优势: 读写不冲突，提高并发性能
