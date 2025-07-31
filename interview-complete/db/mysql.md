@@ -244,3 +244,70 @@ VARCHAR的"VAR"不体现在：
 3. 结构调整 ：不能改变字段的基本约束
 
 结论： VARCHAR的"可变性"是一种存储和性能优化机制，而非动态模式调整能力。它在固定的最大长度约束内，提供了灵活高效的字符串存储方案。
+
+
+LINGX001
+
+"t表，id，name，time三个字段，id由uuid生成，name存在重复名称，但名称相同时间不一致。
+参考数据：
+id，name，time
+uuid，A，t1
+uuid，B，t2
+uuid，C，t3
+uuid，B，t4
+uuid，A，t5
+uuid，D，t6
+
+要求：对该表进行数据清理，相同的名称只保留最新的那条，其他的删除
+写一条sql实现"
+
+最佳解决方案
+ 方案一：使用窗口函数（推荐）
+```sql
+DELETE FROM t 
+WHERE id NOT IN (
+    SELECT id FROM (
+        SELECT id,
+               ROW_NUMBER() OVER (PARTITION BY name ORDER BY time DESC) as rn
+        FROM t
+    ) ranked
+    WHERE rn = 1
+);
+```
+ 方案二：使用子查询
+```sql
+DELETE FROM t 
+WHERE id NOT IN (
+    SELECT MAX(id) FROM (
+        SELECT id, name, time
+        FROM t t1
+        WHERE time = (
+            SELECT MAX(time) 
+            FROM t t2 
+            WHERE t1.name = t2.name
+        )
+    ) latest_records
+    GROUP BY name
+);
+```
+ 方案三：使用自连接
+```sql
+DELETE t1 FROM t t1
+INNER JOIN t t2 
+WHERE t1.name = t2.name 
+  AND t1.time < t2.time;
+```
+
+最佳实践建议
+1. 优先使用方案一 （窗口函数），性能最优且逻辑最清晰
+2. 执行前备份 ： CREATE TABLE t_backup AS SELECT * FROM t;
+3. 添加索引 ： CREATE INDEX idx_name_time ON t(name, time);
+4. 分批处理 ：大数据量时考虑分批删除避免锁表*（为什么大数据量时会锁表）
+
+#现代SQL的窗口函数特性
+
+函数名() OVER (
+    PARTITION BY 分组字段    -- 类似 GROUP BY
+    ORDER BY 排序字段       -- 决定窗口内的顺序
+    ROWS/RANGE 窗口范围     -- 可选，默认整个分区
+)
