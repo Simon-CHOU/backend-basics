@@ -4,7 +4,7 @@ KCZN002
 PostgreSQL和MySQL有什么区别？
 > 这个问题的关键不是哪个数据库"更好"，而是理解它们的设计哲学差异：PostgreSQL追求功能完整性和标准合规，MySQL追求性能和易用性。作为Senior SDE，需要根据具体的业务需求、团队技能、性能要求和数据完整性需求来做出技术选型决策。
 
-#选型，设计和架构特性，技术前边，社区生态，开源前途（发展趋势）、业务价值。
+#选型，设计和架构特性，技术前边，社区生态，开源前途（发展趋势）、业务价值、工程代价。
 
 面对我们一开始提到的问题，我不要光答 “sql 写法有别”这个层次的内容。
 因为，两个不同的数据库，写法当然有别了。
@@ -13,7 +13,17 @@ PostgreSQL和MySQL有什么区别？
 
 lab: 根据高观点下的差异，性能、部署、迁移、集群、分库分表等选型逻辑。
 
-参考 uber 
+参考 
+#去IOE#传统IT架构vs互联网架构#技术史
+https://www.zhihu.com/question/23119444
+
+平安 汪洋 文集 
+中国平安 Postgresql 选型之路 汪洋
+https://pic.huodongjia.com/ganhuodocs/2017-07-10/1499668681.24.pdf
+https://www.modb.pro/db/186516
+https://www.163.com/dy/article/D6O1AJ9M0511FQO9.html
+
+uber 
 https://www.uber.com/blog/postgres-to-mysql-migration/
 
 
