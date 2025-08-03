@@ -147,3 +147,18 @@ MQ自身机制 vs. 开发者保证：
 - 顺序性（Ordering）优先： 分区路由、单线程消费、业务排序。
 - 最佳实践： 结合MQ机制与应用层设计，强调幂等和补偿，避免过度依赖MQ全局顺序。
 
+
+JDON011
+你们这里用到过过rabbitmq，我想问一下:
+若我们需要rabbitmq在一定条件下需要通知到一个主题，在另外一个条件下通知到另外一个主题。如果我们要利用rabbitmq的特性来实现，我们应该怎么配置？
+或我换一种问法，在rabbitmq下我们要构建一个fanout的topic，那么我的fanout对应我的适用场景。其中这个fanout的特性是什么？
+
+
+
+“RabbitMQ支持多种Exchange类型来实现不同的消息路由需求。如果我们需要在不同条件下通知不同的主题，可以配置多个Exchange（如Direct、Topic、Fanout），并根据业务条件选择发送到不同的Exchange或使用不同的Routing Key。具体做法是：
+1. 配置多个Exchange和队列，分别绑定到不同的业务主题。
+2. 业务代码根据条件选择对应的Exchange或Routing Key进行消息发送。
+这样就能实现条件触发不同主题的通知。
+
+如果要构建一个fanout类型的topic（实际上是fanout Exchange），它的特性是：所有绑定到该Exchange的队列都会收到消息，不关心Routing Key。适用场景包括：系统广播、日志分发、缓存失效通知等需要全量广播的场景。”
+        
