@@ -19,9 +19,13 @@ CITI013
 
 
 
-ZYWL012 WDKJ014 
+ZYWL012 WDKJ014 PWCD017 KCZN028 STMT027
 面向对象的基本设计原则，能说几个吗？
 常用的设计模式你有没有去了解过？
+除了工厂和单例，还用到哪些设计模式
+设计模式有了解过吗？用过那些
+
+
 
 设计模式分三类：创建5、结构7、行为11。
 
@@ -39,3 +43,49 @@ ZYWL012 WDKJ014
 2. 工厂模式 (Factory Method/Abstract Factory) - 用于对象创建的解耦。
 3. 观察者模式 (Observer) - 用于事件驱动和通知机制。
 4. 策略模式 (Strategy) - 用于算法或行为的动态切换
+
+
+
+WDKJ015 PWCD028 KCZN029 KCZN030
+单例模式会遇到线程安全问题，怎么解决？
+singleton单例模式 ，有几种，怎么写，怎么用
+你刚才说到单例模式，单例分懒汉和饿汉，这两种有什么区别呢
+你刚才说到了Double-Check，那么为什么要用Double-Check(双检锁)
+
+懒汉、饿汉、双检锁
+
+单例模式的线程安全问题主要出现在懒汉式实现中，多线程可能同时创建实例，导致不止一个对象。为了解决，我推荐几种方式，但既然提到双检锁（Double-Checked Locking, DCL），我先解释为什么用它。
+
+简单来说，双检锁是为了优化性能。传统的同步方法（如在getInstance上加synchronized）虽然安全，但每次调用都加锁，即使实例已存在，这在高并发下效率低下。
+
+双检锁的思路是：先无锁检查实例是否为空（第一检），如果不为空直接返回；如果为空，才加锁，然后在锁内再检查一次（第二检），确认后创建。这样，大部分时间避免了锁开销，只在首次创建时同步。
+
+代码上，需要用volatile修饰实例变量，防止Java内存模型的指令重排序，确保实例完全初始化。举例：
+
+private static volatile Singleton instance;
+
+public static Singleton getInstance() {
+if (instance == null) {
+synchronized (Singleton.class) {
+if (instance == null) {
+instance = new Singleton();
+}
+}
+}
+return instance;
+}
+
+不过，双检锁有点复杂，JDK早期有bug。现在的最佳实践是静态内部类或枚举，更简单安全。比如枚举：public enum Singleton { INSTANCE; }，JVM保证线程安全。
+
+> spring boot 框架中的单例模式用的是哪一种实现？具体代码怎么写的？
+
+PWCD018
+策略模式，哪几部分组成
+
+
+PWCD019
+策略模式和模板模式有什么区别是
+
+
+ZTFU024
+你写了你熟悉设计模式，能大概讲一下适配器模式吗？
