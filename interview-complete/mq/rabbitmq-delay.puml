@@ -1,0 +1,41 @@
+@startuml RocketMQ延迟消息活动图
+|Producer|
+start
+:创建延迟消息;
+:设置delayTimeLevel参数;
+:发送消息到Broker;
+
+|Broker|
+:接收延迟消息;
+if (是延迟消息?) then (是)
+:存储到SCHEDULE_TOPIC_XXXX;
+:记录原始Topic信息;
+:计算到期时间;
+:持久化到磁盘;
+else (否)
+:直接投递到目标Topic;
+stop
+endif
+
+|定时调度器|
+:启动时间轮算法;
+repeat
+:扫描延迟队列;
+:检查消息到期时间;
+if (消息已到期?) then (是)
+:从延迟队列取出消息;
+:重新构造为普通消息;
+:恢复原始Topic信息;
+:投递到目标Topic;
+else (否)
+:继续等待;
+endif
+repeat while (持续运行)
+
+|Consumer|
+:订阅目标Topic;
+:接收普通消息;
+:正常消费处理;
+stop
+
+@enduml
