@@ -1,0 +1,17 @@
+@startuml websocket rabbitmq
+participant "Client A" as ClientA
+participant "WS Server 1" as Srv1
+participant "Redis" as Redis
+participant "RabbitMQ" as MQ
+participant "WS Server 2" as Srv2
+participant "Client B" as ClientB
+autonumber
+ClientA -> Srv1: SendMsg(to: userB, content: "Hello!")
+Srv1 -> Redis: GET user_session:userB
+Redis --> Srv1: Return queue_name: "q-srv-2"
+Srv1 -> MQ: Publish(exchange: "chat-exchange", \
+             routing_key: "q-srv-2", \
+             message: "Hello!")
+MQ -> Srv2: DeliverMsg (from queue "q-srv-2")
+Srv2 -> ClientB: PushMsg("Hello!")
+@enduml
