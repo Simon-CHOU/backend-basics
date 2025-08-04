@@ -28,6 +28,26 @@ SANO011
 > lab： 找一个大型开源项目，对比 maven 和 gradle 的速度、配置复杂度
 lab: 学习写DSL的最小知识 groovy kotlin
 
+
+SANO015
+从你项目的实际经验来看，比如说你代码写了提交到Git上面，后面CI/CD 怎么做？
+
+实际情况分析
+真正的CI/CD部分：
+
+- Git代码提交触发Jenkins流水线 ✅ (CI)
+- 自动化构建打包 ✅ (CI)
+- 代码静态扫描(Fortify, SonarQube) ✅ (CI)
+- 自动化部署到生产环境 ✅ (CD)
+传统IT流程部分：
+
+- 手动补充测试报告
+- 手动补充安全渗透测试报告
+- 上线签报审批流程
+- 人工协调运维部署
+
+
+
 CITI015 STMT024
 你用过什么Linux命令，你知道ulimit命令吗
 你了解的Linux命令吗？
