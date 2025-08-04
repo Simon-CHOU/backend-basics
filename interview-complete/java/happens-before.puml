@@ -1,0 +1,10 @@
+@startuml
+participant ThreadA
+participant ConcurrentHashMap
+participant ThreadB
+ThreadA -> ConcurrentHashMap: put(key, newValue)  // CAS 更新
+ConcurrentHashMap --> ThreadA: success
+ThreadB -> ConcurrentHashMap: get(key)  // 可能看到 oldValue (不一致窗口)
+ConcurrentHashMap --> ThreadB: oldValue
+note right of ConcurrentHashMap: 最终一致：稍后 ThreadB 会看到 newValue
+@enduml

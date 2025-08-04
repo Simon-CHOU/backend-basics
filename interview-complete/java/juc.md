@@ -30,3 +30,21 @@ TOUG006
 最后， Semaphore ：信号量，控制并发访问数。原理AQS管理许可（permits）。场景：限流，如数据库连接池限制连接数。最佳实践：用acquire/release管理，考虑公平模式防饥饿。
 
 总体，这些工具构建在AQS上，提供高效同步。实际中，我会根据场景选择：简单用synchronized，复杂用这些。
+
+
+
+
+ANTG012
+ConcurrentHashMap 能不能保证强一致性？
+
+ConcurrentHashMap 不能保证强一致性，它仅提供弱一致性（最终一致性）。
+
+为何不保证强一致性？  
+   ├─ 设计目标：平衡并发性能与一致性（强一致性需全局锁，牺牲性能）  
+   └─ 适用场景：高并发读写，允许短暂不一致的场景（如缓存、统计）  
+
+不，ConcurrentHashMap 不能保证强一致性。它提供线程安全和最终一致性，但不确保所有操作的即时可见性。
+
+简单解释下原理：在 JDK 8+ 中，它用 CAS 和 synchronized 实现并发读写，volatile 确保最终可见。但复合操作不是原子的，可能看到中间状态。这基于 Java Memory Model 的 happens-before 规则。
+
+在实际业务中，如果需要强一致，我会加外部锁或用 synchronized HashMap；否则，它很适合高并发场景，能显著优化性能。
