@@ -24,6 +24,20 @@ lab: 考虑业务价值：生产监控如何使用探针监控JMM状态，#Altha
 ANTG007
 我们经常会遇到异常:就是内存溢出。OOM 这个应该是对哪一块的内存进行调优？
 
+Java堆 (Heap)
+java.lang.OutOfMemoryError: Java heap space
+
+java.lang.OutOfMemoryError: GC overhead limit exceeded
+  - 这个错误本质上还是和堆有关，但情况更特殊。
+
+元空间 (Metaspace)
+> 在JDK 8及以后版本，这个错误取代了旧版的 PermGen space 错误。
+java.lang.OutOfMemoryError: Metaspace
+
+JVM栈 (JVM Stacks) / 本地内存 (Native Memory)
+java.lang.OutOfMemoryError: Unable to create new native thread
+
+
 ANTG008
 万一说线上出现这种（OOM）问题应该应该怎么样去进行应急，应急的思路是怎么样的？
 
