@@ -18,6 +18,16 @@ SANO010
 > lab: cold start latency
 
 
+SANO011
+你比较以下maven 和gradle ，你最多用的是哪一个，然后比较它们的异同
+对比：
+性能：gradle胜出：增量构建、构建缓存机制，在大型项目构建中优势明显
+配置管理：maven xml 依赖直观，但是自定义构建逻辑时冗长。gradle DSL学习曲线更陡峭，但是在处理复杂多模块项目和复杂依赖关系中有优势。
+生态成熟度：maven久经考验，更成熟。但gradle也已经足够成熟，被spring boot官方推荐。
+
+> lab： 找一个大型开源项目，对比 maven 和 gradle 的速度、配置复杂度
+lab: 学习写DSL的最小知识 groovy kotlin
+
 CITI015 STMT024
 你用过什么Linux命令，你知道ulimit命令吗
 你了解的Linux命令吗？
