@@ -41,3 +41,18 @@ java.lang.OutOfMemoryError: Unable to create new native thread
 ANTG008
 万一说线上出现这种（OOM）问题应该应该怎么样去进行应急，应急的思路是怎么样的？
 
+处理线上OOM问题的总体思路可以清晰地划分为三个阶段： 紧急恢复、根因分析、总结预防
+
+阶段一：紧急止损，恢复服务 (Emergency Recovery)
+摘除流量，控制影响面，避免问题扩大化
+dump收集证据后重启。
+
+阶段二：离线分析，定位根因 (Root Cause Analysis)
+heap.hprof 分析
+
+阶段三：修复根治，防范未然 (Fix & Prevention)
+修复后重新上线。加强监控和自动化语境。复盘-知识沉淀和分享。
+
+> lab: 流量摘除：新发布的oom可以立刻回滚。如果发布有一段时间了，是否只能直接重启？
+> lab: 恢复服务时，内存中在途的请求、没执行完的任务，如何无损恢复？oom应用卡死，还能优雅启停吗？（业务量小无所谓，如果业务量大，中间态的请求应该不少）#CleanArchitecture
+> 考虑 x 分钟 - m级事务 设计和业务价值。 业界有哪些OOM事故响应评级的通行标准？
