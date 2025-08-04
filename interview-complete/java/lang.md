@@ -51,7 +51,19 @@ Key Actions:
 > lab: 构建一个multi-module playground，切换jdk编译运行，一览每个版本的特性。
 
 SANO003
+介绍一下 pure function ，也就是 functional programming 最重要的部分。
 
+Pure Function（纯函数） = 确定性输出 + 无副作用
+Pure Function 的两个黄金法则：
+1. 相同输入 → 相同输出 (Deterministic)
+2. 无副作用 (No Side Effects)
+
+架构层面的价值
+1. 可测试性 (Testability) 纯函数测试简单直接 Given-When-Then
+2. 并发安全 (Thread Safety) 纯函数天然线程安全,无共享状态，无竞态条件
+3. 缓存优化 (Memoization) 纯函数结果可以安全缓存
+
+> lab: clean code 和 重构中如何讨论 pure function
 
 
 SANO004
