@@ -1,0 +1,49 @@
+@startuml
+skinparam monochrome true
+title 并发数据结构一致性判定决策树（改进版，从 ConcurrentHashMap 推广）
+
+start
+:并发数据结构 X
+(示例: ConcurrentHashMap);
+
+if (是否存在全局单一串行化点
+(如全局锁、线性化点)?) then (是)
+  :Linearizability (强一致性);
+  note right: 如单机锁保护结构
+  stop
+else (否)
+  if (所有操作是否原子且结果立即可见?) then (是)
+    :操作级 Linearizable;
+    if (是否存在跨键/复合操作需求?) then (否)
+      :Per-key Linearizability;
+      note right: 如 ConcurrentHashMap 的逐键原子操作
+      stop
+    else (是)
+      if (是否支持事务原子性
+(如 MVCC、2PC)?) then (是)
+        :Transactional Linearizability;
+        stop
+      else (否)
+        :Sequential Consistency
+(全局顺序但非实时);
+        stop
+      endif
+    endif
+  else (否)
+    if (是否保证因果顺序?) then (是)
+      :Causal Consistency;
+      stop
+    else (否)
+      if (是否最终收敛一致?) then (是)
+        :Eventual Consistency;
+        note right: 如许多分布式缓存
+        stop
+      else (否)
+        :Weak Consistency (无保证);
+        stop
+      endif
+    endif
+  endif
+endif
+
+@enduml
