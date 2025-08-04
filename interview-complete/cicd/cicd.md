@@ -1,4 +1,23 @@
 
+SANO010
+我们如果发现了我们的Container启动是非常非常慢的，每一次发布到kubernetes可能要2分钟。你用什么方法可以做到最最最的启动时间。任何的方法可以用的，不只是说从代码里，你的Docker也可以改变，啥都可以改的。
+
+应用层优化、容器镜像优化、Kubernetes配置优化，以及基础设施优化
+
+诊断耗时：用kubectl describe pod和docker stats先确定是哪个环节最耗时，然后按影响程度优先解决
+
+"最快见效的是镜像优化。我会采用多阶段构建，将构建依赖和运行时分离；使用Alpine Linux基础镜像减少体积；合并RUN指令减少层数；利用.dockerignore排除无关文件。同时配置镜像缓存策略，在每个节点预拉取常用基础镜像。"
+"应用层面，我会启用Spring Boot的lazy initialization，只初始化必要的bean；使用GraalVM Native Image实现秒级启动；优化数据库连接池配置，避免启动时的连接等待。"
+
+"K8s配置上，我会调整ImagePullPolicy为IfNotPresent，避免重复拉取；配置合理的resource limits和requests，防止资源竞争；使用readiness probe而不是liveness probe来判断启动完成；考虑使用DaemonSet预热节点。"
+
+"长期来看，我会推动架构改进：实施蓝绿部署减少用户感知的启动时间；使用Istio的流量管理实现渐进式发布；考虑将有状态服务拆分，使用StatefulSet；建立完整的监控体系，持续优化启动性能。"
+
+"作为技术负责人，我还会建立启动时间的SLA指标，定期review和优化；制定标准化的Docker最佳实践文档；培训团队成员掌握这些优化技巧，确保整个团队都能写出高性能的容器化应用。"
+
+> lab: cold start latency
+
+
 CITI015 STMT024
 你用过什么Linux命令，你知道ulimit命令吗
 你了解的Linux命令吗？
