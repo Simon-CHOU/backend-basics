@@ -195,3 +195,22 @@ record
 Record patterns
 vitural threads (Project Loom)
 structured concurency
+
+
+CITI004
+如何使用jdbc连接数据库？jdk提供了几种statement？
+
+DBC (Java Database Connectivity) 是Java语言中用于与数据库交互的一套标准API。它通过加载特定数据库厂商提供的驱动（Driver），建立连接，然后创建并执行SQL语句来实现数据库操作。
+使用JDBC连接并操作数据库通常遵循以下六个核心步骤。
+
+- 加载数据库驱动（load the driver）
+- 简历数据库链接( Establish Connection)
+- 执行SQL查询(Execute SQL Query)
+- 处理结果集（Process ResultSet）
+- 关闭资源（Close Resource）
+
+JDK主要提供了三种 Statement 接口： Statement 、 PreparedStatement 和 CallableStatement ，其中 PreparedStatement 是防止SQL注入和提升性能的最佳实践。
+
+> jdbc连接数据库（establish connection） 的原理是什么？
+
+DBC建立连接的核心原理是 Java的SPI（Service Provider Interface）机制 和 双向注册的驱动管理模式 。应用程序通过 DriverManager 这个统一的门面（Facade）发起连接请求， DriverManager 则利用SPI自动发现或被动接收由第三方数据库厂商实现的 Driver 服务。它会轮询所有已注册的驱动，询问“谁能处理这个URL？”，第一个成功建立物理连接并返回 Connection 对象的驱动即胜出。这个过程将应用程序代码与具体的数据库驱动实现完全解耦。
