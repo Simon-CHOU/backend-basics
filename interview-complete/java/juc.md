@@ -98,6 +98,33 @@ allOf() + 自定义线程池（推荐） ExecutorService executor
 - thenApply ：只需要对上一步结果做简单处理（同步或轻量级异步），比如格式转换、拼接字符串。
 - thenCompose ：需要基于上一步结果再发起新的异步操作，比如先查用户，再查用户的订单。
 
+ALIJ001
+线程池参数设置？线程池拒绝策略都有哪些？
+
+，线程池参数设置我会从业务需求、系统资源和性能目标三个层面综合考量：
+
+1. 线程池核心参数包括 corePoolSize（核心线程数）、maximumPoolSize（最大线程数）、keepAliveTime（空闲线程存活时间）、workQueue（任务队列）、threadFactory（线程工厂）、handler（拒绝策略）。
+
+2. corePoolSize 通常根据 CPU 核心数和任务类型（CPU 密集型/IO 密集型）来设定。CPU 密集型建议 corePoolSize ≈ CPU 核心数，IO 密集型可适当放大，避免线程过多导致上下文切换开销。
+
+3. maximumPoolSize 结合系统最大并发能力和业务高峰流量预估，设置为 corePoolSize 的 2~4 倍，确保高峰期有足够线程处理任务。
+
+4. workQueue 选择时要权衡任务堆积风险与响应延迟。短任务建议用有界队列（如 ArrayBlockingQueue），防止 OOM。长任务或高吞吐场景可用无界队列，但要配合监控和报警。
+
+5. keepAliveTime 主要影响非核心线程的回收速度，通常设置为几十秒到几分钟，避免线程频繁创建销毁。
+
+6. 拒绝策略（handler）常用有四种：AbortPolicy（抛异常）、CallerRunsPolicy（调用者执行）、DiscardPolicy（直接丢弃）、DiscardOldestPolicy（丢弃最老任务）。实际生产推荐自定义报警或降级策略，避免任务静默丢失。
+
+7. 最佳实践是结合业务压力测试和监控，动态调整线程池参数，确保系统既能高效利用资源，又能平稳应对突发流量。
+
+> 有没有保底不出错的 corePollSize, maximumPoolSize 经验公式?
+
+- CPU 密集型任务：corePoolSize = CPU 核心数（如 2c pod 设为 2）
+- IO 密集型任务：corePoolSize = CPU 核心数 × 2 或更高（需结合压测和内存评估）
+- maximumPoolSize = corePoolSize × 2~4
+最佳实践 ：
+- 先按经验公式设置，结合业务压测和监控动态调整
+- 关注 CPU、内存、队列长度、线程池拒绝次数等指标
 
 CITI003
 线程池策略有哪些？jdk提供了哪些拒绝策略？拒绝策略如何影响线程池的行为？
