@@ -98,3 +98,37 @@ allOf() + 自定义线程池（推荐） ExecutorService executor
 - thenApply ：只需要对上一步结果做简单处理（同步或轻量级异步），比如格式转换、拼接字符串。
 - thenCompose ：需要基于上一步结果再发起新的异步操作，比如先查用户，再查用户的订单。
 
+
+CITI003
+线程池策略有哪些？jdk提供了哪些拒绝策略？拒绝策略如何影响线程池的行为？
+
+创建线程池的策略：
+Executors.newFixedThreadPool(n)
+Executors.newCachedThreadPool()
+Executors.newSingleThreadExecutor()
+Executors.newScheduledThreadPool()
+ScheduledThreadPool
+实际生产中，我更推荐自定义ThreadPoolExecutor，因为默认实现在高并发下有风险。
+
+ThreadPoolExecutor 的底层任务调度策略
+在线程池中，任务提交后的调度策略主要分为三部分：
+核心线程执行；
+阻塞队列缓存；
+最大线程补充；
+达到上限后会触发 拒绝策略（RejectedExecutionHandler）。
+
+JDK 提供了四种内置拒绝策略，分别是：
+
+- AbortPolicy（默认）：抛出 RejectedExecutionException；
+- CallerRunsPolicy：由提交任务的线程自己执行，起到“背压”作用；
+- DiscardPolicy：直接丢弃任务，不抛异常；
+- DiscardOldestPolicy：丢弃队列头部最旧的任务，再尝试提交新任务。
+
+这些策略直接影响线程池的行为：
+AbortPolicy 更适合早期暴露问题；
+CallerRunsPolicy 适合控制提交速率、避免 OOM；
+DiscardPolicy 和 DiscardOldestPolicy 更适合对延迟不敏感的场景。
+
+实际项目中我也实现过自定义的 RejectedExecutionHandler，做任务日志记录、报警或者落盘重试。
+
+> 建议线程池参数要根据业务特点调优：CPU密集型任务线程数约等于CPU核数，IO密集型可以设置为2倍CPU核数，队列大小要考虑内存限制和响应时间要求。
