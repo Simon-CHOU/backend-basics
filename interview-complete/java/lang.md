@@ -214,3 +214,24 @@ JDK主要提供了三种 Statement 接口： Statement 、 PreparedStatement 和
 > jdbc连接数据库（establish connection） 的原理是什么？
 
 DBC建立连接的核心原理是 Java的SPI（Service Provider Interface）机制 和 双向注册的驱动管理模式 。应用程序通过 DriverManager 这个统一的门面（Facade）发起连接请求， DriverManager 则利用SPI自动发现或被动接收由第三方数据库厂商实现的 Driver 服务。它会轮询所有已注册的驱动，询问“谁能处理这个URL？”，第一个成功建立物理连接并返回 Connection 对象的驱动即胜出。这个过程将应用程序代码与具体的数据库驱动实现完全解耦。
+
+
+
+CITI012
+java 反射能修改私有成员变量吗？如果可以怎么做？如果不可以，为什么？
+
+可以修改 。Java反射可以通过 setAccessible(true) 绕过访问控制修改私有变量。具体步骤：获取Field对象，调用setAccessible(true)，然后set新值。
+
+技术原理：
+"setAccessible(true)实际上是修改了Field对象的override标志位，绕过了JVM的访问检查机制。这是在运行时动态改变访问权限，不是编译时的权限检查。"
+
+业务场景：
+- 框架开发 ：Spring IoC容器的字段注入
+- 测试场景 ：单元测试中访问私有状态
+- 序列化 ：Jackson、Gson等JSON库
+- ORM框架 ：Hibernate的实体字段映射
+
+坑点：
+"反射操作比直接访问慢10-100倍，在热点代码中需要考虑缓存Field对象"
+"虽然技术上可行，但破坏了API契约，增加了代码的脆弱性。我们团队通常通过代码规范和静态分析工具来控制反射的使用"
+"需要注意不同JDK版本的行为差异，特别是Java 17的强封装特性"
