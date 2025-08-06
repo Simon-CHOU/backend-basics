@@ -132,3 +132,24 @@ DiscardPolicy 和 DiscardOldestPolicy 更适合对延迟不敏感的场景。
 实际项目中我也实现过自定义的 RejectedExecutionHandler，做任务日志记录、报警或者落盘重试。
 
 > 建议线程池参数要根据业务特点调优：CPU密集型任务线程数约等于CPU核数，IO密集型可以设置为2倍CPU核数，队列大小要考虑内存限制和响应时间要求。
+
+
+CITI005
+concurrenthashmap如何使用？
+
+
+ConcurrentHashMap 是Java并发包中的核心工具，我通常从三个层面来理解和使用它： 核心定位、关键用法和典型场景 。”
+
+“ 首先，它的核心定位是一个高性能的线程安全哈希表。 与 Hashtable 或 Collections.synchronizedMap 不同，它的高性能来自于内部精巧的并发控制。在JDK 8以后，它主要通过 CAS操作 和 synchronized 锁住哈希桶的头节点 来实现。这种细粒度的锁机制，只有在发生哈希冲突时才会加锁，极大地提升了并发环境下的吞吐量，尤其是在读多写少的场景。”
+
+“ 其次，在关键用法上，除了像普通 Map 一样使用 put 和 get 之外，作为资深开发者，我更关注它的原子复合操作，这是避免并发编程中竞态条件的关键。 ”
+
+“一个典型的例子就是‘检查再更新’（check-then-act）。比如，我们不能写 if (map.get(key) == null) { map.put(key, value); } ，因为这在并发下不是原子的。正确的做法是直接使用 putIfAbsent(key, value) 。类似地，对于更新和计数场景，我会优先使用 compute 和 merge 这类方法，它们能保证整个操作的原子性，代码也更简洁。”
+
+“ 最后，在典型场景中，我主要在两个地方使用它： ”
+
+“ 第一，作为高并发服务的本地缓存。 它的高读取性能和线程安全特性使其成为理想选择。”
+
+“ 第二，作为多线程共享的计数器或状态容器。 例如，我会用 ConcurrentHashMap<String, LongAdder> 来实现一个高性能的并发计数器，通过 computeIfAbsent 来原子地初始化计数器，这样性能会优于使用 AtomicLong 。”
+
+“总结一下，我认为用好 ConcurrentHashMap 的关键在于： 理解它细粒度锁的原理，并充分利用它提供的原子复合操作来编写正确且高效的并发代码，而不是简单地把它当作一个线程安全的 HashMap 来用。 ”
