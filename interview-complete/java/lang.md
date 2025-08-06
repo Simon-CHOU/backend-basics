@@ -169,3 +169,29 @@ Java 异常处理中，什么时场景应该在函数签名中将异常抛出（
 Clean Code 相关原则可引用第 7 章全文。
 Clean Architecture 相关原则可引用第 22 章（依赖规则）和分层设计的章节。
 
+
+
+CITI002
+jdk 1.8 11 17 21 有什么特性？你用到过哪些？
+
+8
+Lambda Stream API
+Optional
+java.time
+CompletableFuture
+
+11
+HttpClient
+ZGC
+jlink
+String new API
+
+17
+Sealed classes
+Pattern Matching for instanceof
+record
+
+21
+Record patterns
+vitural threads (Project Loom)
+structured concurency
