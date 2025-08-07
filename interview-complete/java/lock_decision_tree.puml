@@ -1,0 +1,155 @@
+@startuml Java锁选择决策树
+
+skinparam DefaultFontName Microsoft YaHei
+skinparam DefaultFontSize 14
+skinparam ArrowColor #2C3E50
+skinparam NodeColor #3498DB
+skinparam BackgroundColor #FFFFFF
+skinparam NodeFontColor #FFFFFF
+skinparam shadowing false
+
+title Java锁选择决策树
+
+!define NODE(x) <b>x</b>
+!define DECISION(x) <b><color:#E74C3C>x</color></b>
+!define RESULT(x) <b><color:#27AE60>x</color></b>
+
+start
+
+:Java并发锁选择;
+
+if (JDK版本 ≥ 8?) then (否)
+  :优先考虑ReentrantLock;
+  note right
+    JDK 8之前，synchronized性能较差
+  end note
+else (是)
+  if (是否需要高级特性?) then (是)
+    :使用Lock接口实现;
+    
+    if (使用场景是什么?) then (缓存)
+      :考虑ReadWriteLock;
+    else if (队列) then
+      :考虑Condition;
+    else if (资源池) then
+      :考虑Semaphore/CountDownLatch;
+    else (其他)
+      if (是否读多写少?) then (是)
+        :ReadWriteLock;
+        
+        if (是否需要乐观读?) then (是)
+          :StampedLock;
+          note right
+            JDK 8+提供，性能更好
+            但不可重入，使用更复杂
+          end note
+        else (否)
+          if (是否需要写锁降级?) then (是)
+            :ReentrantReadWriteLock;
+            note right
+              支持锁降级：写锁→读锁
+              不支持锁升级：读锁→写锁
+            end note
+          else (否)
+            :ReentrantReadWriteLock;
+          endif
+        endif
+      else (否)
+        :ReentrantLock;
+        
+        if (是否需要公平性?) then (是)
+          :new ReentrantLock(true);
+          note right
+            公平锁：按请求顺序获取锁
+            性能较低，但避免线程饥饿
+          end note
+        else (否)
+          :new ReentrantLock(false);
+          note right
+            非公平锁：不保证获取顺序
+            默认选项，性能更好
+          end note
+        endif
+        
+        if (是否需要条件变量?) then (是)
+          :lock.newCondition();
+          note right
+            支持多个条件变量
+            比wait/notify更灵活
+          end note
+        endif
+      endif
+    endif
+    
+    if (是否需要超时/可中断?) then (是)
+      :ReentrantLock;
+      note right
+        tryLock(timeout)
+        lockInterruptibly()
+      end note
+    else (否)
+      :考虑synchronized;
+      note right
+        如果不需要高级特性
+        synchronized更简洁
+      end note
+    endif
+  else (否)
+    :使用synchronized;
+    note right
+      - 代码简洁
+      - 自动释放锁
+      - JDK 6后性能显著提升
+    end note
+  endif
+  
+  if (并发量和锁竞争程度?) then (极高)
+    if (是否可以分解锁粒度?) then (是)
+      :分段锁;
+      note right
+        如ConcurrentHashMap的分段锁
+        减小锁粒度，提高并发度
+      end note
+    else (否)
+      if (是否需要原子性复合操作?) then (是)
+        :java.util.concurrent.atomic包;
+        note right
+          AtomicInteger, LongAdder等
+          适合高并发计数场景
+        end note
+      else (否)
+        :volatile + CAS;
+        note right
+          无锁算法，性能最佳
+          但实现复杂，易出错
+        end note
+      endif
+    endif
+  else if (高) then
+    :Lock接口实现;
+    note right
+      ReentrantLock等
+      提供更多控制能力
+    end note
+  else (低/中)
+    :synchronized;
+    note right
+      简单场景首选
+      JVM会自动优化
+    end note
+  endif
+endif
+
+stop
+
+legend right
+  <b>Java锁选择最佳实践</b>
+  ====
+  1. 优先使用synchronized（简单、自动释放）
+  2. 需要高级特性时使用Lock接口实现
+  3. 读多写少场景使用ReadWriteLock
+  4. 极高并发考虑无锁CAS或分段锁
+  5. 注意避免死锁和过度同步
+endlegend
+
+@enduml
