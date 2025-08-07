@@ -175,6 +175,54 @@ ALIJ002
 > lab 理解上述两个补充的内涵
 
 
+ALIJ003
+我们刚刚提到了CAS哦，ConcurrentHashMap里面其实也用到了，像我们一般处理这个并发场景的话，可能如果要保证线程安全，就会涉及到一些锁相关的。有了解到Java里面有哪些锁的实现方式吗？
+
+java.util.concurrent.locks 包内有接口类，有实现类，问“实现方式”，就答实现类。
+
+内置锁
+- synchronized
+
+显式锁
+- JUC.locks
+  - ReentrantLock 可重入锁
+  - ReentrantReadWriteLock 读写锁
+  - StampedLock 票据锁
+
+无锁并发控制
+- 基于AQS 的并发控制工具
+ - Samaphore 信号量
+ - CountDownlatch 倒计时门闩
+ - Cyclicbarier  循环栅栏
+ - Phaser 阶段器
+
+原子类
+- java.util.concurrent.atomic
+ - AtomicBoolean
+ - AtomicInteger
+ - AtomicIntegerArray
+ - AtomicIntegerFieldUpdater
+ - AtomicLong
+ - AtomicLongArray
+ - AtomicLongFieldUpdater
+ - AtomicMarkableReference
+ - AtomicReference
+ - AtomicReferenceArray
+ - AtomicReferenceFieldUpdater
+ - AtomicStampedReference
+ - DoubleAccumulator
+ - DoubleAdder
+ - LongAccumulator
+ - LongAdder
+ - Striped64
+
+
+> lab: explain java.util.concurrent.locks #RoadTo21
+> lab: 如果不局限在 java.util.concurrent.locks， 如何自顶向下地讨论Java编程语言中“锁”的实现？
+> concept: 为什么说基于AQS的同步器的相关并发控制工具，不完全是锁？ 既然如此，为什么不直接说 AQS相关同步工具“完全不是锁”？
+> concept: 乐观锁/悲观锁， 公平锁/非公平锁， 可重入锁/非可重入锁， 读写锁/共享锁/排他锁
+
+
 CITI005
 concurrenthashmap如何使用？
 
