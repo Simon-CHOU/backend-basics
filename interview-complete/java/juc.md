@@ -369,6 +369,25 @@ CAS 是 AQS 的 “原子操作引擎”，提供底层技术支撑；AQS 是 CA
 > AbstractQueuedSynchronizer 的规范中文翻译是 抽象队列同步器。CAS（Compare And Swap） 的标准中文翻译是 比较并交换。
 
 
+XXWJ012
+AQS 队列里面存的是什么东西？（提示：跟自旋有关）
+
+开场定位（展现架构理解）： "AQS队列存储的是等待获取同步状态的线程节点，具体是Node对象。每个Node包装了一个线程和它的等待状态。"
+
+核心技术点（体现深度理解）： "关于自旋的提示，这里有两个层面：第一，新来的线程会先自旋尝试获取锁，避免直接入队的开销；第二，队列头部的线程被唤醒后也会自旋检查是否能获取到同步状态。"
+
+实现细节（展现源码级理解）： "Node节点包含几个关键字段：thread存储线程引用，waitStatus表示等待状态如SIGNAL、CANCELLED，prev和next构成双向链表。AQS维护head和tail指针，通过CAS操作保证队列操作的线程安全。"
+
+设计思想（体现架构能力）： "这种设计的精妙之处在于：队列提供公平性保证，自旋提供性能优化。AQS通过模板方法模式，让子类只需实现tryAcquire等方法，队列管理和线程调度由框架统一处理。"
+
+实际应用（展现工程经验）： "在ReentrantLock中，每个等待线程都会包装成Node入队。CountDownLatch的共享模式下，多个线程可以同时被唤醒。这种统一的队列机制是Java并发包高性能的基础。"
+
+总结升华： "所以AQS队列本质上是一个高效的线程等待队列，通过Node节点管理线程状态，结合自旋和阻塞两种策略，实现了既保证公平性又兼顾性能的同步机制。"
+
+> lab: 单步调试AQS，体验AQS的工作原理，观察“自旋”的发生。徒手画出状态图#状态机
+> lab: 阅读 Craig, T. (1993). Building FIFO and priority-queueing spin locks from atomic swap.
+
+
 ZYWL010 XXWJ010
 synchronized同步过程中，会涉及到“锁”的升级过程，这个有了解过吗？
 Java里面的锁有了解过吗？谈谈synchronized锁的升级的过程。锁升级过后还可以降级吗？
