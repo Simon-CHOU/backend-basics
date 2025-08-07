@@ -354,8 +354,25 @@ synchronized的实现基于JVM的内置锁机制，底层依赖对象头中的Ma
 
 > lab: 寒食君
 
-ZYWL010
+XXWJ011
+你提到自旋了，说一下你对 CAS 和 AQS 的理解吧。
+
+“CAS是无锁并发的基础，底层依赖CPU的原子指令，比如x86的CMPXCHG。它通过比较内存中的期望值和实际值，如果一致就更新，否则自旋重试。Java的原子类（如AtomicInteger）和自旋锁都基于CAS。优点是避免了线程阻塞，缺点是有ABA问题和高竞争下自旋开销大。
+
+AQS是Java并发包的核心同步框架，采用模板方法模式，把同步状态管理和线程排队分离。它内部用一个volatile的state变量和CLH队列实现线程的排队和唤醒。ReentrantLock、CountDownLatch、Semaphore等同步器都是基于AQS实现的。AQS既支持独占模式也支持共享模式，能灵活扩展各种同步工具。
+
+总结：CAS适合无锁、低竞争场景，AQS适合复杂同步需求。两者结合，构成了Java高性能并发的基石。”
+
+> concept: CAS（Compare And Swap）和 AQS（AbstractQueuedSynchronizer）为何被频繁放在一起讨论？
+CAS 是 AQS 的 “原子操作引擎”，提供底层技术支撑；AQS 是 CAS 的 “逻辑封装框架”，扩展出复杂同步能力。它们从技术依赖、功能互补、知识链条、设计思想到问题关联都深度绑定，共同构成了 Java 并发编程的核心底层逻辑。因此，讨论并发机制时，必然需要将二者结合，才能完整解释 “并发工具如何安全、高效地协调多线程” 这一核心问题。
+
+> AbstractQueuedSynchronizer 的规范中文翻译是 抽象队列同步器。CAS（Compare And Swap） 的标准中文翻译是 比较并交换。
+
+
+ZYWL010 XXWJ010
 synchronized同步过程中，会涉及到“锁”的升级过程，这个有了解过吗？
+Java里面的锁有了解过吗？谈谈synchronized锁的升级的过程。锁升级过后还可以降级吗？
+
 
 synchronized 的锁升级是 JVM 的重要优化。整体是从无锁到偏向锁、轻量级锁，最后到重量级锁的过程，按需升级且不可逆。
 首先是偏向锁，针对无竞争场景。当第一个线程获取锁时，会在对象头 Mark Word 记录线程 ID，之后这个线程再进入就无需加锁解锁，减少 CAS 操作开销。
