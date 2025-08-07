@@ -161,6 +161,20 @@ DiscardPolicy 和 DiscardOldestPolicy 更适合对延迟不敏感的场景。
 > 建议线程池参数要根据业务特点调优：CPU密集型任务线程数约等于CPU核数，IO密集型可以设置为2倍CPU核数，队列大小要考虑内存限制和响应时间要求。
 
 
+ALIJ002
+为什么使用 concurrentHashMap？concurrentHashMap 如何实现线程安全?
+- 在高并发场景下，传统的HashMap线程不安全，容易导致数据不一致甚至死循环。
+- ConcurrentHashMap专为并发设计，能在保证线程安全的同时，最大化利用多核CPU提升性能，是业界最佳实践。
+
+- 它采用分段锁（JDK8前）或CAS+链表/红黑树（JDK8后），将整个Map拆分为多个桶，每个桶独立加锁或用CAS原子操作，极大减少锁竞争。
+- 读操作基本无锁，写操作只锁定相关桶或节点，保证高吞吐。
+
+补充
+- 根据业务并发量、热点key分布等，合理选择并发容器和线程池参数，避免过度设计，也不牺牲可维护性。
+- 实际项目中，除了ConcurrentHashMap，还会关注整体架构的瓶颈，比如热点key、锁粒度、内存占用等，必要时用LongAdder、分段缓存等进一步优化。
+> lab 理解上述两个补充的内涵
+
+
 CITI005
 concurrenthashmap如何使用？
 
