@@ -235,3 +235,28 @@ java 反射能修改私有成员变量吗？如果可以怎么做？如果不可
 "反射操作比直接访问慢10-100倍，在热点代码中需要考虑缓存Field对象"
 "虽然技术上可行，但破坏了API契约，增加了代码的脆弱性。我们团队通常通过代码规范和静态分析工具来控制反射的使用"
 "需要注意不同JDK版本的行为差异，特别是Java 17的强封装特性"
+
+
+ZYWL011
+Java类的加载机制，有一个双亲委派模型，这是什么，了解过吗？
+
+
+Oracle的文档里，只有 delegation model 这个词，没有“双亲”的说法。
+[Class ClassLoader](https://docs.oracle.com/javase/8/docs/api/java/lang/ClassLoader.html)
+双亲委派是一个典型的误译。
+
+
+Java 的类加载机制采用了双亲委派模型，核心思想是类加载请求会先由当前类加载器向上委托给父加载器，直到 Bootstrap ClassLoader。如果父加载器无法加载，再由当前加载器尝试。
+
+Java 类加载器的委托模型（Delegation Model）具有以下三大好处：
+
+核心类安全性：确保 Java 核心类（如 java.lang.String）只能由引导类加载器加载，防止被恶意篡改，提升安全性和一致性。
+
+类的唯一性：通过优先委托机制避免类的重复加载，确保每个类在 JVM 中唯一对应一个 Class 对象，防止类型冲突和加载错误。
+
+扩展与隔离能力：通过自定义类加载器机制支持模块隔离、插件化架构和热部署，使系统具备更强的灵活性和可维护性。
+
+
+> concept: classloader and parental-delegation 
+[the class-loading delegation mechanism](https://docs.oracle.com/javase/tutorial/ext/basics/load.html)
+[Multithreaded Custom Class Loaders in Java](https://docs.oracle.com/javase/8/docs/technotes/guides/lang/cl-mt.html)
