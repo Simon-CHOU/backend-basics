@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>并发性能测试可视化 - 原子整型 vs 同步整型</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            max-width: 300px;
+            z-index: 100;
+        }
+        
+        #legend {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 12px;
+            z-index: 100;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 100;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        input[type="file"] {
+            margin: 10px 0;
+            color: white;
+        }
+        
+        #stats {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 12px;
+            z-index: 100;
+            max-width: 250px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="info">
+            <h3>并发性能测试可视化</h3>
+            <p><strong>测试对象:</strong> 原子整型 vs 同步整型</p>
+            <p><strong>X轴:</strong> 竞争强度 (1-10)</p>
+            <p><strong>Y轴:</strong> 执行时间 (对数坐标)</p>
+            <p><strong>操作:</strong> 鼠标拖拽旋转视角，滚轮缩放</p>
+        </div>
+        
+        <div id="legend">
+            <h4>图例</h4>
+            <div id="legendContent"></div>
+        </div>
+        
+        <div id="controls">
+            <h4>控制面板</h4>
+            <input type="file" id="csvFile" accept=".csv" />
+            <br>
+            <button onclick="loadSampleData()">加载示例数据</button>
+            <button onclick="toggleLogScale()">切换对数坐标</button>
+            <button onclick="resetCamera()">重置视角</button>
+        </div>
+        
+        <div id="stats">
+            <h4>性能统计</h4>
+            <div id="statsContent">请先加载CSV数据</div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let scene, camera, renderer, controls;
+        let chartData = [];
+        let isLogScale = true;
+        let lineGroups = [];
+        
+        // 线程数对应的颜色
+        const threadColors = {
+            1: 0xff0000,   // 红色
+            2: 0xff8800,   // 橙色
+            4: 0xffff00,   // 黄色
+            6: 0x88ff00,   // 黄绿色
+            8: 0x00ff00,   // 绿色
+            10: 0x00ff88,  // 青绿色
+            12: 0x0088ff   // 蓝色
+        };
+        
+        // 初始化Three.js场景
+        function initThreeJS() {
+            // 创建场景
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a2e);
+            
+            // 创建相机
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(15, 10, 15);
+            camera.lookAt(0, 0, 0);
+            
+            // 创建渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('container').appendChild(renderer.domElement);
+            
+            // 添加轨道控制器
+            addOrbitControls();
+            
+            // 添加光照
+            addLighting();
+            
+            // 创建坐标轴
+            createAxes();
+            
+            // 开始渲染循环
+            animate();
+        }
+        
+        // 添加轨道控制器（简化版）
+        function addOrbitControls() {
+            let isMouseDown = false;
+            let mouseX = 0, mouseY = 0;
+            let targetRotationX = 0, targetRotationY = 0;
+            let rotationX = 0, rotationY = 0;
+            
+            renderer.domElement.addEventListener('mousedown', (event) => {
+                isMouseDown = true;
+                mouseX = event.clientX;
+                mouseY = event.clientY;
+            });
+            
+            renderer.domElement.addEventListener('mousemove', (event) => {
+                if (isMouseDown) {
+                    targetRotationY += (event.clientX - mouseX) * 0.01;
+                    targetRotationX += (event.clientY - mouseY) * 0.01;
+                    mouseX = event.clientX;
+                    mouseY = event.clientY;
+                }
+            });
+            
+            renderer.domElement.addEventListener('mouseup', () => {
+                isMouseDown = false;
+            });
+            
+            renderer.domElement.addEventListener('wheel', (event) => {
+                camera.position.multiplyScalar(event.deltaY > 0 ? 1.1 : 0.9);
+            });
+            
+            // 平滑旋转更新
+            function updateRotation() {
+                rotationX += (targetRotationX - rotationX) * 0.1;
+                rotationY += (targetRotationY - rotationY) * 0.1;
+                
+                const radius = camera.position.length();
+                camera.position.x = radius * Math.sin(rotationY) * Math.cos(rotationX);
+                camera.position.y = radius * Math.sin(rotationX);
+                camera.position.z = radius * Math.cos(rotationY) * Math.cos(rotationX);
+                camera.lookAt(0, 0, 0);
+                
+                requestAnimationFrame(updateRotation);
+            }
+            updateRotation();
+        }
+        
+        // 添加光照
+        function addLighting() {
+            // 环境光
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambientLight);
+            
+            // 方向光
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 10, 5);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // 点光源
+            const pointLight = new THREE.PointLight(0xffffff, 0.5);
+            pointLight.position.set(-10, 10, -10);
+            scene.add(pointLight);
+        }
+        
+        // 创建坐标轴
+        function createAxes() {
+            const axesGroup = new THREE.Group();
+            
+            // X轴 (竞争强度)
+            const xGeometry = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(12, 0, 0)
+            ]);
+            const xMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+            const xAxis = new THREE.Line(xGeometry, xMaterial);
+            axesGroup.add(xAxis);
+            
+            // Y轴 (执行时间)
+            const yGeometry = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(0, 12, 0)
+            ]);
+            const yMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+            const yAxis = new THREE.Line(yGeometry, yMaterial);
+            axesGroup.add(yAxis);
+            
+            // Z轴 (深度)
+            const zGeometry = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(0, 0, 12)
+            ]);
+            const zMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
+            const zAxis = new THREE.Line(zGeometry, zMaterial);
+            axesGroup.add(zAxis);
+            
+            // 添加轴标签
+            addAxisLabels(axesGroup);
+            
+            scene.add(axesGroup);
+        }
+        
+        // 添加轴标签
+        function addAxisLabels(axesGroup) {
+            // 创建文本纹理
+            function createTextTexture(text, color = '#ffffff') {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = 256;
+                canvas.height = 64;
+                
+                context.fillStyle = color;
+                context.font = '24px Arial';
+                context.textAlign = 'center';
+                context.fillText(text, 128, 40);
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                return texture;
+            }
+            
+            // X轴标签
+            const xLabelTexture = createTextTexture('竞争强度');
+            const xLabelMaterial = new THREE.SpriteMaterial({ map: xLabelTexture });
+            const xLabel = new THREE.Sprite(xLabelMaterial);
+            xLabel.position.set(13, 0, 0);
+            xLabel.scale.set(2, 0.5, 1);
+            axesGroup.add(xLabel);
+            
+            // Y轴标签
+            const yLabelTexture = createTextTexture('执行时间');
+            const yLabelMaterial = new THREE.SpriteMaterial({ map: yLabelTexture });
+            const yLabel = new THREE.Sprite(yLabelMaterial);
+            yLabel.position.set(0, 13, 0);
+            yLabel.scale.set(2, 0.5, 1);
+            axesGroup.add(yLabel);
+        }
+        
+        // 解析CSV数据
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            const headers = lines[0].split(',');
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',');
+                const row = {};
+                headers.forEach((header, index) => {
+                    const value = values[index];
+                    if (header.includes('Time') || header.includes('Ratio')) {
+                        row[header.trim()] = parseFloat(value);
+                    } else {
+                        row[header.trim()] = isNaN(value) ? value : parseInt(value);
+                    }
+                });
+                data.push(row);
+            }
+            
+            return data;
+        }
+        
+        // 创建性能图表
+        function createChart(data) {
+            // 清除现有图表
+            lineGroups.forEach(group => scene.remove(group));
+            lineGroups = [];
+            
+            // 按线程数分组数据
+            const groupedData = {};
+            data.forEach(row => {
+                const threadCount = row.ThreadCount;
+                if (!groupedData[threadCount]) {
+                    groupedData[threadCount] = { atomic: [], synchronized: [] };
+                }
+                
+                const x = row.ContentionLevel;
+                const atomicTime = isLogScale ? Math.log10(row['AtomicTime(ns)']) : row['AtomicTime(ns)'] / 1e6;
+                const syncTime = isLogScale ? Math.log10(row['SynchronizedTime(ns)']) : row['SynchronizedTime(ns)'] / 1e6;
+                
+                groupedData[threadCount].atomic.push(new THREE.Vector3(x, atomicTime, 0));
+                groupedData[threadCount].synchronized.push(new THREE.Vector3(x, syncTime, 2));
+            });
+            
+            // 为每个线程数创建折线
+            Object.keys(groupedData).forEach(threadCount => {
+                const color = threadColors[threadCount] || 0xffffff;
+                const group = new THREE.Group();
+                
+                // 原子整型折线
+                const atomicGeometry = new THREE.BufferGeometry().setFromPoints(groupedData[threadCount].atomic);
+                const atomicMaterial = new THREE.LineBasicMaterial({ 
+                    color: color, 
+                    linewidth: 3,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const atomicLine = new THREE.Line(atomicGeometry, atomicMaterial);
+                group.add(atomicLine);
+                
+                // 同步整型折线
+                const syncGeometry = new THREE.BufferGeometry().setFromPoints(groupedData[threadCount].synchronized);
+                const syncMaterial = new THREE.LineBasicMaterial({ 
+                    color: color, 
+                    linewidth: 3,
+                    transparent: true,
+                    opacity: 0.6,
+                    lineDashSize: 0.3,
+                    gapSize: 0.1
+                });
+                const syncLine = new THREE.Line(syncGeometry, syncMaterial);
+                group.add(syncLine);
+                
+                // 添加数据点
+                groupedData[threadCount].atomic.forEach(point => {
+                    const pointGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+                    const pointMaterial = new THREE.MeshBasicMaterial({ color: color });
+                    const pointMesh = new THREE.Mesh(pointGeometry, pointMaterial);
+                    pointMesh.position.copy(point);
+                    group.add(pointMesh);
+                });
+                
+                groupedData[threadCount].synchronized.forEach(point => {
+                    const pointGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+                    const pointMaterial = new THREE.MeshBasicMaterial({ color: color });
+                    const pointMesh = new THREE.Mesh(pointGeometry, pointMaterial);
+                    pointMesh.position.copy(point);
+                    group.add(pointMesh);
+                });
+                
+                scene.add(group);
+                lineGroups.push(group);
+            });
+            
+            updateLegend(Object.keys(groupedData));
+            updateStats(data);
+        }
+        
+        // 更新图例
+        function updateLegend(threadCounts) {
+            const legendContent = document.getElementById('legendContent');
+            legendContent.innerHTML = '';
+            
+            threadCounts.forEach(threadCount => {
+                const color = threadColors[threadCount] || '#ffffff';
+                const hexColor = '#' + color.toString(16).padStart(6, '0');
+                
+                // 原子整型图例
+                const atomicItem = document.createElement('div');
+                atomicItem.className = 'legend-item';
+                atomicItem.innerHTML = `
+                    <div class="legend-color" style="background-color: ${hexColor};"></div>
+                    <span>${threadCount}线程-原子整型</span>
+                `;
+                legendContent.appendChild(atomicItem);
+                
+                // 同步整型图例
+                const syncItem = document.createElement('div');
+                syncItem.className = 'legend-item';
+                syncItem.innerHTML = `
+                    <div class="legend-color" style="background-color: ${hexColor}; opacity: 0.6; border: 1px dashed white;"></div>
+                    <span>${threadCount}线程-同步整型</span>
+                `;
+                legendContent.appendChild(syncItem);
+            });
+        }
+        
+        // 更新统计信息
+        function updateStats(data) {
+            const statsContent = document.getElementById('statsContent');
+            
+            let atomicWins = 0;
+            let syncWins = 0;
+            let totalSpeedup = 0;
+            
+            data.forEach(row => {
+                if (row.Winner === 'Atomic') {
+                    atomicWins++;
+                } else {
+                    syncWins++;
+                }
+                totalSpeedup += row.SpeedupRatio;
+            });
+            
+            const avgSpeedup = totalSpeedup / data.length;
+            
+            statsContent.innerHTML = `
+                <p><strong>总测试数:</strong> ${data.length}</p>
+                <p><strong>原子整型胜出:</strong> ${atomicWins}次</p>
+                <p><strong>同步整型胜出:</strong> ${syncWins}次</p>
+                <p><strong>平均倍速比:</strong> ${avgSpeedup.toFixed(2)}x</p>
+                <p><strong>坐标模式:</strong> ${isLogScale ? '对数坐标' : '线性坐标'}</p>
+            `;
+        }
+        
+        // 加载示例数据
+        function loadSampleData() {
+            const sampleCSV = `ThreadCount,ContentionLevel,AtomicTime(ns),SynchronizedTime(ns),SpeedupRatio,Winner
+1,1,1000000,1200000,1.20,Synchronized
+1,2,2000000,2500000,1.25,Synchronized
+1,3,3000000,4000000,1.33,Synchronized
+1,4,4000000,5500000,1.38,Synchronized
+1,5,5000000,7000000,1.40,Synchronized
+2,1,1500000,2000000,1.33,Synchronized
+2,2,3000000,4500000,1.50,Synchronized
+2,3,4500000,7000000,1.56,Synchronized
+2,4,6000000,9500000,1.58,Synchronized
+2,5,7500000,12000000,1.60,Synchronized
+4,1,2000000,3500000,1.75,Synchronized
+4,2,4000000,8000000,2.00,Synchronized
+4,3,6000000,13000000,2.17,Synchronized
+4,4,8000000,18000000,2.25,Synchronized
+4,5,10000000,23000000,2.30,Synchronized`;
+            
+            const data = parseCSV(sampleCSV);
+            chartData = data;
+            createChart(data);
+        }
+        
+        // 切换对数坐标
+        function toggleLogScale() {
+            isLogScale = !isLogScale;
+            if (chartData.length > 0) {
+                createChart(chartData);
+            }
+        }
+        
+        // 重置相机
+        function resetCamera() {
+            camera.position.set(15, 10, 15);
+            camera.lookAt(0, 0, 0);
+        }
+        
+        // 文件上传处理
+        document.getElementById('csvFile').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = parseCSV(e.target.result);
+                        chartData = data;
+                        createChart(data);
+                    } catch (error) {
+                        alert('CSV文件解析失败: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+        
+        // 渲染循环
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // 添加一些动画效果
+            lineGroups.forEach((group, index) => {
+                group.rotation.y += 0.001 * (index + 1);
+            });
+            
+            renderer.render(scene, camera);
+        }
+        
+        // 窗口大小调整
+        window.addEventListener('resize', function() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // 初始化
+        initThreeJS();
+        loadSampleData();
+    </script>
+</body>
+</html>
