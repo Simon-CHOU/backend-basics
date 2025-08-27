@@ -94,6 +94,7 @@ public interface FileAuditLogRepository extends JpaRepository<FileAuditLog, Long
                                                         @Param("limit") int limit);
 
 
+
     /**
      * Count total operations
      *
@@ -140,8 +141,9 @@ public interface FileAuditLogRepository extends JpaRepository<FileAuditLog, Long
      * Delete audit logs before specified date
      *
      * @param cutoffDate the cutoff date
+     * @return number of deleted records
      */
     @Modifying
     @Query("DELETE FROM FileAuditLog fal WHERE fal.operationDate < :cutoffDate")
-    void deleteByOperationDateBefore(@Param("cutoffDate") LocalDateTime cutoffDate);
+    int deleteByOperationDateBefore(@Param("cutoffDate") LocalDateTime cutoffDate);
 }

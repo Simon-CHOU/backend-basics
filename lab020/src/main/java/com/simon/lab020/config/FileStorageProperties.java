@@ -22,19 +22,19 @@ public class FileStorageProperties {
      * Base path for file storage
      */
     @NotBlank(message = "Base path is required")
-    private String basePath = "uploads/";
+    private String basePath;
 
     /**
      * Temporary path for file processing
      */
     @NotBlank(message = "Temp path is required")
-    private String tempPath = "temp/";
+    private String tempPath;
 
     /**
      * Path for storing file chunks
      */
     @NotBlank(message = "Chunks path is required")
-    private String chunksPath = "chunks/";
+    private String chunksPath;
 
     // Manual getters since Lombok is not working properly
     public String getBasePath() {
