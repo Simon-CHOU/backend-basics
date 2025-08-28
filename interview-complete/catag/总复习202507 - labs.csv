@@ -1,0 +1,161 @@
+id,no,code,title
+lab001,1,SANO010,cold start latency
+lab002,2,SANO017,在阿里云真的做一次灰度。
+lab003,3,SANO017,alex xu 和 software engineer at google 如何讨论灰度？
+lab004,4,SANO017,灰度的业务价值？ 灰度和AB-Test的异同？ CITI015 STMT024 你用过什么Linux命令，你知道ulimit命令吗 你了解的Linux命令吗？ 你的回答： “是的，我在后端开发和运维中经常使用各种Linux命令。让我按类别简单分享一些常用命令和实际应用。 首先，文件和目录管理：ls -la 查看详细列表，cd 切换目录，cat 和 tail -f 监控日志，比如调试服务时实时看错误；find 和 grep 搜索文件或内容，比如 grep -r 'error' 检查日志。 文本处理：vi 编辑文件，sed 和 awk 处理数据，比如 sed 's/old/new/g' 批量替换，awk '{print $1}' 提取列；uniq 去重，常跟 sort 一起用。 进程管理：ps aux | grep 查看进程，top 或 htop 监控资源，kill -9 终止，nohup & 后台运行服务。 网络和系统：curl 测试API，ss -tuln 检查端口，df -h 查看磁盘，free -m 看内存。 至于ulimit，我很熟悉，它是shell命令，用于设置进程资源限制，避免系统崩溃。在高并发Java服务中，我常用 ulimit -n 65535 增加文件描述符上限，防止 'too many open files' 错误；-s unlimited 优化栈大小。永久设置在 /etc/security/limits.conf 文件中，并在Docker中通过ulimits配置。这在生产环境中帮我优化了不少性能问题。 总之，这些命令在CI/CD管道、容器化和故障排除中都很关键。如果需要，我可以深入某个例子。”
+lab005,5,CITI017; STMT026,观察一次pod的启动。 CITI018* 什么是ingress？有何业务价值？枚举应用场景？ Ingress作为Kubernetes流量管理的核心组件，在现代云原生架构中扮演着关键角色，是实现服务网格、API网关、负载均衡等功能的重要基础设施。 最佳实践建议 1. 选择合适的Ingress Controller : 根据需求选择Nginx、Traefik、Istio Gateway等 2. SSL证书自动化 : 使用cert-manager实现Let's Encrypt自动证书管理 3. 监控和日志 : 配置Ingress访问日志和性能监控 4. 安全加固 : 实施WAF规则、IP白名单、OAuth认证等 5. 高可用部署 : Ingress Controller多副本部署，避免单点故障
+lab006,6,CITI017; STMT026,有了ingress，容器化部署的 spring boot 后端微服务之间还需要curl ip:port/path 或者 domain/path 互访吗？（domain可能是公司内网SF区或者DMZ区可用的域名）
+lab007,7,STMT026,总结docker-compose搭建开发环境、k9s连接测试环境看日志的技巧和配置。
+lab008,8,WDKJ027,"int,long,BigDecimal。单线程到 fork-join。如何估算1000万个数最大的JVM内存占用？基于估算，如何决策是否考虑在计算中使用外存（outter memory）？"
+lab009,9,HUAW008; MEIT002,draw uml
+lab010,10,HUAW008; MEIT002,summary oc_memo
+lab011,11,MEIT003,复现 投产评审表的处理。
+lab012,12,MEIT004,如果重来一次，如何用架构设计来解决这些问题。
+lab013,13,MEIT005,discuss DDD/cleanCode in this senario
+lab014,14,MEIT006,复现 UserUtil.getUserInfo() MEIT007 你们CRM的数据量是多少？ 总的来说，这是一个典型的服务于特定垂直领域B2B业务的系统，其特点不是海量的互联网用户并发，而是中等规模数据下的高业务逻辑复杂度和对数据一致性的强要求。我们的技术架构和优化策略都是紧密围绕这些特点展开的。 > 第一句话就给系统定性：“B2B业务”、“中等规模”、“高业务逻辑复杂度”、“强数据一致性”。这立刻将面试官的预期从“淘宝双十一”拉到了一个他能理解和共鸣的专业领域。 主动定义“特点”，把“并发不高”这个看似的弱点，转化为架构选型的合理依据。 具体到数据指标上： 用户规模： 核心活跃用户在200人左右，他们是业务运营的关键角色，如销售和管理层。总用户池在400到800人之间。 核心实体数据量： 客户（Account）信息大约是6万多条。 每个客户会关联多个商机（Opportunity），商机信息的总量在十几万级别。 而最核心、增长最快的交易流水（Revenue/Transaction）数据，目前已经累积了超过40万笔，并且以稳定的速度每日增长。 系统负载： 核心业务接口的常规QPS在10到20之间。这个并发量虽然不高，但单次请求背后可能涉及复杂的数据库事务和多表关联查询。”
+lab015,15,MEIT010,对账系统设计：跑批对账 vs 实时对账
+lab016,16,MEIT011,错了之后，需要手工curl 上游，获取JSON，阅读代码，结合当时下游的get 请求返回日志，对比当时的错误发生crm。通常都不是。#沉疴#分布式事务
+lab017,17,MEIT012,BI 基于Hive搜集下游业务系统数据。暴露Restful接口供下游制度查询。下游通过自定义定时任务把数据拉倒自己的库里，或者同步查询。这种设计糟糕的根源是什么？从数学上的in-consistency会发生在哪里了？
+lab018,18,MEIT012,c4model 绘制系统架构图
+lab019,19,WDKJ024,siruis client jar注入原理
+lab020,20,WDKJ024,fps 分片上传下载 复现。
+lab021,21,JDON014,我做个一个chatbox，后端 spring boot 做过websocket的endpoint，使用 activemq 在B/S转发chat message
+lab022,22,JDON014,zendesk chatbot platform integrate
+lab023,23,JDON015,电话小结 POST
+lab024,24,XGDU003,PaaS 的核心 dashbaord 配置 subsystem url跳转。 其中 sub system的鉴权设计需要关注（token请求解密用户信息）
+lab025,25,LINX005,同步多线程并发POST的最佳编排实践
+lab026,26,KCZN001; ZTFU018,"ocss-framework 停更，一部分升级卡住。如果要解决，怎么解决？项目内能排除 parent 的spring boot吗？ 从前太被动，每次安全骚年都要扫到 spring 1.5 的危险依赖，但是有升级不了。只能豁免。一升级就到处报错。我当时做错了什么？有更好的办法吗？ 2019 swust 2019 -2024 oc fps/sirius - cimb - crm /cms/pmss-core - cra 2025 schneider skill java core redis postgresql/mysql mq microservice cicd k8s docker gradle/maven Scrum, Agile Methods, TDD, Clean Code leadership: 3p 11p"
+lab027,27,ANTG008,流量摘除：新发布的oom可以立刻回滚。如果发布有一段时间了，是否只能直接重启？
+lab028,28,ANTG008,恢复服务时，内存中在途的请求、没执行完的任务，如何无损恢复？oom应用卡死，还能优雅启停吗？（业务量小无所谓，如果业务量大，中间态的请求应该不少）#CleanArchitecture > 考虑 x 分钟 - m级事务 设计和业务价值。 业界有哪些OOM事故响应评级的通行标准？
+lab029,29,JITU003,手工把上面的问题都复现一遍。
+lab030,30,JITU003,复盘枚举业务场景下的OOM
+lab031,31,JDON017,除了cms还有哪些GC？如何选型？如何配置？如何benck回收性能？ > 从java 8 11 17 21 24 演化过来， Java CMS 垃圾回收机制有哪些关键变化？
+lab032,32,ZTFU013,equals() 和 == 进行两个对象比较时，比较的具体是堆内存对象的哪一段内存？
+lab033,33,ZTFU014,如何观测 GC 以证实纸面的理论?
+lab034,34,ZTFU029,“跟踪JVM” 是什么意思？trace what?
+lab035,35,ZTFU029,按照SOP亲手操作一遍，理解原理。
+lab036,36,KCZN016,不可名状。如何观测？
+lab037,37,KCZN017; KCZN018,Object Memory Layout 示例计算 假设我们有一个最简单的`Object`对象，没有任何实例变量。那么，在64位JVM上，如果启用了压缩指针，它的大小大约是12字节（Mark Word: 8字节 + Class Pointer: 4字节），但考虑到对齐要求，最终大小可能是16字节。 然而，具体的内存布局和大小还可能受到JVM实现细节的影响，如垃圾收集器的选择、特定的JVM启动参数等。为了准确地计算某个具体对象的大小，可以使用一些工具，比如JOL (Java Object Layout)。 接下来，我们可以利用JOL来展示一个空`Object`的实际内存布局和大小。看起来在我的当前环境中无法直接运行Java命令来展示`jol-cli.jar`的输出结果。不过，您可以很容易地在自己的环境中执行以下命令来查看一个空`Object`对象的具体内存布局和大小： ```bash java -jar jol-cli.jar internals java.lang.Object ``` 确保您已经从[这里](https://github.com/openjdk/jol)下载了`jol-cli.jar`。通过这个工具，您将能够看到更详细的、针对您所使用的特定JVM环境的对象内存布局信息。 总结一下，尽管具体的数字可能会根据您的JVM配置有所变化，但了解这些基本组成部分（对象头、实例数据以及填充）对于掌握Java对象的内存分配机制是非常重要的。希望这些信息能帮助您更好地理解JVM中对象的内存分配原理。
+lab038,38,STMT006; STMT007,"观测字节码、JVM，验证 “两个字符串字面量相加，赋值给字符串变量，生成1个对象”的机制。 > concepts: “字符串常量池的拼接优化” 或 “编译期字符串拼接”。字符串常量池（String Constant Pool）字符串字面量（string literals） #compile-time string concatenation #constant folding 代码 String s = ""hello"" + ""world""; 会被编译器优化为 String s = ""helloworld"";，这一过程就属于 compile-time string concatenation，是 Java 编译器对字符串常量操作的典型优化手段。"
+lab039,39,STMT008,how to prove it?
+lab040,40,TOUG002,用一个非Web示例，花式编排completabeFuture掌握API的用法。
+lab041,41,TOUG002,使用 completableFuture 和 @Async的区别
+lab042,42,TOUG002,Future->CompletableFuture 的迁移，模拟迁移一个旧项目
+lab043,43,TOUG002,从 completableFuture 架构和实现原理，研究API设计和面向对象设计模式。#CleanArchitecture [java.util.concurrent.CompletableFuture](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html)
+lab044,44,JDON008,thenApply vs thenCompose - thenApply ：只需要对上一步结果做简单处理（同步或轻量级异步），比如格式转换、拼接字符串。 - thenCompose ：需要基于上一步结果再发起新的异步操作，比如先查用户，再查用户的订单。
+lab045,45,WDKJ005,allOf底层原理。 CompletableFuture 基于 Future 新的发展-架构设计和设计模式
+lab046,46,ALIJ003,explain java.util.concurrent.locks #RoadTo21
+lab047,47,ALIJ003,如果不局限在 java.util.concurrent.locks， 如何自顶向下地讨论Java编程语言中“锁”的实现？ > concept: 为什么说基于AQS的同步器的相关并发控制工具，不完全是锁？ 既然如此，为什么不直接说 AQS相关同步工具“完全不是锁”？ > concept: 乐观锁/悲观锁， 公平锁/非公平锁， 可重入锁/非可重入锁， 读写锁/共享锁/排他锁 乐观锁 vs 悲观锁 划分维度：对待并发冲突的“态度”（是否预设冲突会发生） 公平锁 vs 非公平锁 划分维度：线程获取锁的 “顺序”（是否遵循 “先请求先获得”） 可重入锁 vs 非可重入锁 划分维度：同一线程是否可以 “重复获取已持有的锁” 读写锁 / 共享锁 / 排他锁 划分维度：锁是否允许 “多个线程同时持有”（共享性）
+lab048,48,LINX006,"复现 Map<businessId, Future> 多线程并发同步调用RESTful API并合并返回。"
+lab049,49,ZYWL001,通过线程局部变量或消息传递来避免共享状态，即为一种“进程内架构”。
+lab050,50,ZYWL002,枚举业务场景，考虑：并发量、锁竞争程度、高级功能，形成决策树
+lab051,51,ZYWL009,寒食君
+lab052,52,XXWJ012,单步调试AQS，体验AQS的工作原理，观察“自旋”的发生。徒手画出状态图#状态机
+lab053,53,XXWJ012,"阅读 Craig, T. (1993). Building FIFO and priority-queueing spin locks from atomic swap."
+lab054,54,XXWJ010; ZYWL010,徒手画出 Mark Word 锁升级的过程
+lab055,55,PWCD023,"ArrayList 并发安全控制。 如何理解“对于线程安全需求，Java提供了几种解决方案：Vector（内置同步）、Collections.synchronizedList（装饰器模式）、CopyOnWriteArrayList（读写分离），以及在业务层使用显式锁控制。"""
+lab056,56,PWCD023,设计洞察，为何 ArrayList 没有像 ConcurrentHashMap 之于 Hashmap 那样的高性能线程安全版本
+lab057,57,KCZN015; PWCD029,对资源（或者说锁）进行排序，并强制所有线程都必须按照相同的、预先定义好的顺序来获取锁。这样的通过破坏“循环等待”条件来避免死锁的方案，有何优缺点？#按序加锁 Pros - 确定性地消除死锁 (Deterministic Deadlock Elimination) 数学意义上保证死锁不会发生。 - 代码逻辑相对简单，可读性好 ——这是针对并发控制的实现代码而言 - 性能开销低 - 易于推广和审查（ code review） Cons - 需要定义和维护一个全局顺序 (Requires a Global Order) - 可能降低灵活性和代码直观性 (Reduced Flexibility)  ——这是针对业务流程的表达代码而言，业务代码的结构被并发策略“扭曲”了 -  可能在特定场景下降低并发度 (Potential for Reduced Concurrency)： 强制的顺序可能会导致不必要的阻塞。（浪费了潜在的并行时间，争取到了确定的安全性）#trade-off > concept: “按序加锁”在学术上的规范术语是 资源有序分配（Resource Ordering）。
+lab058,58,KCZN015; PWCD029,类似“按序加锁”的“主动舍弃潜在的并发度，追求确定性的死锁预防”的trade-off设计和架构思想，在 java 世界中，还有那些典型的成功案例？
+lab059,59,KCZN015; PWCD029,按序加锁，如何导致“降低并发度” 场景： 锁顺序规定为 Lock A -> Lock B 。 线程T1 的任务需要先长时间操作资源B，再短暂操作资源A。 线程T2 的任务只需要短暂操作资源A。 分析： 如何导致“降低并发度”？ 根据规则，线程T1 必须 先获取 Lock A ，然后才能获取 Lock B 。 T1执行，成功锁住A。 此时T2来了，想执行它的任务，它需要 Lock A 。但A被T1持有，所以T2 阻塞 。 T1继续执行，它可能还要做一些准备工作，然后才去锁B，再长时间地操作B，最后才短暂地用一下A，然后释放所有锁。 在T1持有A的整个漫长过程中，T2都被不必要地阻塞了。如果规则允许T1先锁B，那么在T1操作B的时候，T2完全可以进来快速完成对A的操作然后离开。 这就是并发度的降低 ：为了遵守一个全局的安全规则，我们牺牲了局部最优的执行效率，导致了不必要的阻塞，拉低了系统总的执行效率。 更通俗地理解： 并发度的降低，源于一个线程（T1）为了遵守全局的死锁避免规则，被迫“过早地”获取了一个它“很晚才用”的锁（Lock A），从而不必要地阻塞了另一个只需要这个锁的线程（T2）很长一段时间。 在这个例子中，Lock A成为了一个“路障”。T1 把这个路障放在路上很久，但自己却先绕到旁边去干别的、更耗时的事情，导致了后面只想通过这个路障的 T2 被长时间堵死。 这就是系统设计中的典型权衡（Trade-off）： 我们得到了什么？：通过强制的锁顺序，我们得到了系统的稳定性，彻底避免了死锁的风险。 我们失去了什么？：我们失去了局部的性能最优解。如果允许 T1 先锁 B，在 T1 操作 B 的大部分时间里，T2 是可以自由进出 A 的，系统的总吞吐量会更高。
+lab060,60,STMT009,"coding verify. > concept: 题干到底想考察什么 ? - 方法有几种 synchronized 普通， synchronized static, 普通， static 。 - 竞争条件：同一个类，同一个对象。不是多个对象。 - 什么是”阻塞“，和thread-safe 有什么区别？ #Lock Contention 基于同一个类创建1个实例化对象， 这个类中有 synchronized 方法、普通方法、static 方法 。 这些3类方法，在多线程环境里（如线程池、手工启动的多个线程）里运行时，分别会不会阻塞？ 注意，只考虑同一类方法是否阻塞，不考虑两两之间。"
+lab061,61,STMT014,Future.get() mechanism
+lab062,62,STMT015,Future、CompletionService、CompletableFuture介绍与对比 Future 提供了异步编程的基础抽象，CompletionService 解决了多任务协调的问题，而 CompletableFuture 则是现代 Java 异步编程的首选。
+lab063,63,STMT016,为什么常见的编码规约中生产最佳实践都是自定义线程池？Executors 工厂方法的隐患是什么？ 深层原因拆解： - Executors 工厂方法（如 newFixedThreadPool、newCachedThreadPool）隐藏了关键参数，默认配置不透明，容易导致资源风险。 - 例如： - newFixedThreadPool 使用无界 LinkedBlockingQueue，任务堆积可能导致 OOM。 - newCachedThreadPool 使用 SynchronousQueue，最大线程数为 Integer.MAX_VALUE，极端情况下会疯狂创建线程，导致系统资源耗尽。 - 默认拒绝策略为 AbortPolicy，任务过载时直接抛异常，无法灵活处理。 - 线程池参数（核心线程数、最大线程数、队列类型、拒绝策略等）无法根据业务场景定制。
+lab064,64,STMT018,newFixiedThreadPool vs newCachedThreadPool load test
+lab065,65,STMT020,get hands dirty.
+lab066,66,STMT021,Thread Pool Configuration and Work Queue Management
+lab067,67,STMT028,trigger ConcurrentModificationException
+lab068,68,SANO002,构建一个multi-module playground，切换jdk编译运行，一览每个版本的特性。
+lab069,69,SANO003,clean code 和 重构中如何讨论 pure function
+lab070,70,SANO004,避免Null的架构设计，和DDD有何关联？
+lab071,71,ANTG009,区分Checked和Unchecked异常 #架构设计
+lab072,72,ANTG009,考虑事务（transaction）的影响，如何讨论异常处理 ``` Java异常继承体系 Throwable /         \ Error           Exception /         \ RuntimeException   其他Exception (Unchecked)        (Checked) ```
+lab073,73,ANTG010,DDD 如何讨论异常处理？
+lab074,74,XXWJ008,无论是 JDK 自带的 Proxy 和第三方的 cglib， 对于应用层的开发者来说，具体有哪些业务价值？
+lab075,75,XXWJ009,为什么动态代理是AOP的雏形？ 动态代理之所以被看作是AOP（面向切面编程）的雏形，主要是因为它提供了在 运行时 、 不修改源码 的情况下，对目标对象的方法进行 拦截和增强 的能力，这恰好是AOP思想的核心。
+lab076,76,MSXF005,观察，编译后，@annotation注解是否保留到字节码? 编译后注解是否保留到字节码，取决于注解自身通过 `@Retention` 指定的保留策略（`RetentionPolicy`）： - 若注解声明为 `@Retention(RetentionPolicy.SOURCE)`：仅存在于源码中，编译时会被丢弃，**不会保留到字节码**（如 `@Override`）。 - 若注解声明为 `@Retention(RetentionPolicy.CLASS)`（默认策略）：编译后**会保留到字节码**，但类加载时会被虚拟机丢弃，运行期无法通过反射获取。 - 若注解声明为 `@Retention(RetentionPolicy.RUNTIME)`：编译后**会保留到字节码**，且在运行期可通过反射 API 读取（如 `@Deprecated`）。 简言之：默认情况下（未指定 `@Retention` 时），注解会保留到字节码；具体是否保留，由注解定义时的 `RetentionPolicy` 决定。 [Annotations](https://docs.oracle.com/javase/tutorial/java/annotations/)
+lab077,77,WDKJ006; WDKJ007,"CountDownLatch、CompletableFuture的allOf，以及传统的join方法 对比决策 开场定位（展现核心理解）： ""对，三个并行线程。主线程等待子线程有多种方式，我根据不同场景选择不同的同步机制。最常用的是CountDownLatch、CompletableFuture的allOf，以及传统的join方法。"" 技术机制（体现深度理解）： ""具体来说，CountDownLatch是我的首选。创建时设置计数为3，每个子线程完成后调用countDown()，主线程调用await()阻塞等待。它基于AQS实现，通过CAS操作状态变量，性能很好。"" 现代化方案（展现技术前瞻性）： ""更现代的做法是用CompletableFuture.allOf()。我会创建三个CompletableFuture，用allOf包装后thenApply合并结果。这种方式支持异常处理和结果组合，代码更优雅。"" 性能考量（展现架构思维）： ""关键是要用自定义线程池，避免用默认的ForkJoinPool。我通常配置核心线程数为CPU核数的2倍，因为这种场景多是IO密集型的第三方调用。"" 实现细节（展现实践经验）： ""还有个细节，我会设置合理的超时时间。用CountDownLatch的await(timeout, TimeUnit)或CompletableFuture的orTimeout()，避免某个服务异常导致主线程无限等待。"" 对比分析（展现技术深度）： ""相比Thread.join()，这些方式更灵活。join只能等待线程结束，而CountDownLatch可以等待任务完成，CompletableFuture还能处理异常和结果转换。"" 总结升华： ""所以我的选择原则是：简单场景用CountDownLatch，需要结果合并用CompletableFuture，都要配合自定义线程池和超时控制，确保系统的健壮性。"""
+lab078,78,WDKJ013,数据结构、优劣、时间复杂度，应用场景。需要背贯口，不能每次现想，吞吞吐吐。
+lab079,79,PWCD030,同为有序集合，LinkedHashSet（有序）、TreeSet（排序）的区别？ LinkedHashMap（有序）、TreeMap（排序）的区别？
+lab080,80,PWCD030,WeakHashMap 从来没用过。没有用过的先找对应的leetcode题目练一练。
+lab081,81,KCZN009,翻代码diff 1.7 1.8 hashmap @寒食君。
+lab082,82,KCZN009,验证hashmap 1.7的bug和1.8的修复效果
+lab083,83,STMT002,high perspective ? 架构层面的hash冲突考量？
+lab084,84,STMT005,"""多线程环境下拼接，选StringBuffer，但实际开发优先考虑并发包下的更高效方案。"" 更高效方案指的是什么方案？"
+lab085,85,HUAW002,cache aside read/write cdc in real world
+lab086,86,HUAW009,若干次等保测评，若干次安全扫描和渗透测试，都改了什么。
+lab087,87,HUAW010,Double Submit Cookie in practice CSRF token 不能放 Cookie，而是放前端可控的存储（如 localStorage），由前端在请求 header 里携带；微服务架构下应统一由网关或 Auth Service 管理和验证，避免每个后端重复实现。”
+lab088,88,ANTG002,本地消息表 in practice
+lab089,89,ANTG003,MQ 事务型消息，是否支持回滚呢？ in practice MQ事务型消息机制的核心在于 保证消息发送的原子性 ，即确保消息的发送与本地事务的提交或回滚保持一致。它通过“半消息”和“回查机制”实现了这一点，使得在本地事务回滚时，消息不会被错误地发送出去。但对于已经成功发送并被消费者拉取的消息，MQ本身不提供“回滚”能力，此时需要依赖业务层面的补偿机制来处理。
+lab090,90,JITU001,分级兜底 in practice
+lab091,91,JDON003,dbms artile_table vs es in real world 复现
+lab092,92,JDON004,除了“每张表加一个 tenant_id”，多租户到底还有什么？
+lab093,93,JDON005,Nonce 防止重放 in practice
+lab094,94,JDON005,统一认证中心（SSO） ：对于多应用场景，我们会构建统一认证中心，支持OAuth2.0或OpenID Connect等标准协议，实现单点登录（SSO），提升用户体验和管理效率。 in practice
+lab095,95,JDON006,故障预案模板 best practice
+lab096,96,JDON012,activemq rabbitmq rocketmq kafka 选型决策树
+lab097,97,JDON012,通过 mq异步化，和通过定时任务调度异步化的区别
+lab098,98,JDON019,ws弱网下，提升连接存活能力、保障消息可靠送达、会话可恢复、数据可同步。有没有可用的框架已经封装了这些能力？socket.io
+lab099,99,CITI009,Spring Webflux handle backpressure
+lab100,100,CITI018,创建一个足够小的例程，尝试 ingress服务间调用。
+lab101,101,PDDO001,秒杀最小MVP，动手实验 限流排队、读写分离、多级缓存、canel&mq与最终一致性
+lab102,102,PDDO003; PDDO004,实现本地消息表、事务消息、事件驱动+SAGA模式，压测证明将消息丢失率降为 0。
+lab103,103,MEIT013,"过去我的服务都要求强一致性（要对账），创建一个最终一致性的例子, 动手体感 trade-off > conceptt:  CAP BASE"
+lab104,104,XGDU001,动手体会 RESTful API或gRPC 设计和调用的不同
+lab105,105,WDKJ004,上游的数据是海量的，本地系统（在线用户信息查询）作为单一功能的服务，分配资源有限，无法等量的接收上述服务的全量信息和变更。如何演进？
+lab106,106,WDKJ004,尝试基于 dataware house 的 user data aggregation
+lab107,107,WDKJ010,尝试基于 DDD 分层，设计一个简单的微服务架构，以Unite Test OJ为例。
+lab108,108,WDKJ018,复现 read path/ write path 的各种策略，并实现统计极端不一致的频率。
+lab109,109,WDKJ018,复现删除缓存失败的自动重试，和终极解决方案，订阅数据库变更日志CDC
+lab110,110,WDKJ020,复现基于事件驱动的最终一致性，上下游通过MQ解耦
+lab111,111,WDKJ021,SEGA in practice
+lab112,112,PWCD025,SOAP in practice
+lab113,113,PWCD026,复现 pmss-core 的前后端加密
+lab114,114,PWCD026,POST请求默认不缓存  GET请求可以被缓存和分享， 这里的“缓存”是什么意思？ HTTP缓存（HTTP Caching） HTTP缓存是一种机制，允许客户端（如浏览器）或中间代理服务器（如CDN、代理服务器）存储HTTP响应的副本，以便在后续请求中直接使用这些副本，而无需每次都向源服务器发送请求。
+lab115,115,PWCD027,复现： kms秘钥生成、Google Auth 2fa登录、klpa扫码登录2fa、 pmss-core 前后端加密。 desensitizer 日志脱敏。crm 打印安全字段。数据库字段加密 接入集团sec平台获取加密配置。
+lab116,116,ZTFU025,复现： 基于 Token 和 Redis 缓存的接口鉴权方案。
+lab117,117,KCZN007; KCZN008; PWCD022; PWCD035,如何在编码设计和clean code层面考虑 is-a 和 can-do，并实践抽象类、接口
+lab118,118,KCZN007; KCZN008; PWCD022; PWCD035,"亲手枚举abstract class 和 interface 的使用场景 PWCD034 PWCD036 谈谈 java extends Java 能多继承吗? 1. 继承的本质与机制 ""Java通过 extends 关键字实现类的单继承，子类自动获得父类的非private属性和方法。所有类最终都继承自Object。继承是实现代码复用和多态的基础。"" 2. 设计原则与工程实践 ""实际开发中，我遵循Liskov替换原则，确保子类能无缝替换父类。重写方法时用 @Override 保证类型安全。对于不希望被继承的类或方法，使用 final 修饰。"" 3. 组合优先与继承局限 ""我倾向于优先使用组合而非继承，避免继承层级过深导致维护困难。Java8引入接口默认方法，进一步弱化了继承的必要性。"" 4. 继承的高级用法与风险控制 ""在框架设计中，抽象类用于定义模板方法模式，但会严格控制继承层级，防止Fragile Base Class问题。"" 5. 技术演进与最佳实践 ""现代Java推荐接口+默认方法，提升灵活性和可维护性。"" > concepts: GoF设计模式中，除了Liskov替换原则，还有哪些设计原则？# SOLID 五大设计原则 GoF设计模式的基础是SOLID五大设计原则 1. **单一职责原则（Single Responsibility principle，SRP）** 2. **开闭原则（Open-closed principle，OCP）** 3.  Liskov 替换原则（Liskov Substitution Principle，LSP） 4. **接口隔离原则（Interface segregation principle，ISP）** 5. **依赖倒置原则（Dependency inversion principle，DIP）**"
+lab119,119,JDON007; PWCD033,考虑缓存一致性，以及主动失效的限制。 当GET查询接口事务较为复杂，且返回结果包含第三方RESTful API同步查询结果的拼接。为了提高性能，我在结构中加redis缓存“不存在”的结果，即根据id查不到数据的结果，并设置了5分钟超时时间。这样当短时间内并发查询时，就能避免数据库查询和第三方查询耗时，提高吞吐量。 但是，缓存失效前，如果上游数据变化（能查到数据了）。但是下游从当前系统重查得的结果还是“不存在”。 如果这个“不存在”影响了下游的业务逻辑，那么就会造成一连串的数据不一致。 这种情况下，如何保证性能尽可能好的情况下，根治上下游的in-consistancy？ 已知： 上游系统当前没有人力和资源对接我的系统，实现主动调用本系统的同步接口“删除缓存”。 方案一（缩短过期 + 随机抖动），实现简单，性能影响最小，适合对一致性容忍度中等的场景； 方案二（异步定时刷新），主动探测数据变化，一致性窗口可控（30 秒内），性能损耗可接受；
+lab120,120,PDDO005,bench 以springboot应用为例，数据库I/O（1次查询）耗时是什么数量级(ms)，发送消息（send msg to mq)是什么数量级？
+lab121,121,ZTFU001,除了多线程并发（比如同步串行请求改为completablefutre多线程并发请求），还有没有解决 i/o-bound serialization bottleneck的方案？
+lab122,122,ZTFU001,Netty 有没有可以开箱即用的比 Executor +CompletableFutre 性能更高的工具？benchmark 一下
+lab123,123,ALIJ012,制造一次问题，利用工具进行分析 莲路监控 dump gc jstack jstat 定位问题。
+lab124,124,ZTFU009,在本地和云环境，动手实践 定界->诊断->归因->复盘 的完整流程。
+lab125,125,MSXF002,Spring Cloud 和 Kubernetes 混合治理 > concept: 官方文档如何考虑 Boot 到 Cloud 的演进和迁移
+lab126,126,STMT025,Spring官方推荐的最佳实践中， Cloud 如何和 Boot 集成或混合使用？ 先用 Spring Boot 构建基础服务，后按需引入 Spring Cloud starter，逐步启用微服务治理能力。
+lab127,127,STMT025,Spring Cloud 的能力和Kubernetes 高度重合，实践中如何选型？ 总结 选型时优先用 K8s 原生能力，Spring Cloud 只补应用层治理和开发体验，避免重复造轮子和自维组件，提升稳定性和可维护性。 - 1. 基础能力优先用 K8s 原生 ：服务发现、配置、健康检查、弹性伸缩、滚动升级等，K8s 已内建，Spring Cloud 逐步弱化。 - 2. 应用层治理用 Spring Cloud ：如 API 网关（Gateway）、服务间调用（Feign）、弹性治理（Resilience4j）、配置客户端体验（Config Client）、消息驱动（Stream），Cloud 提供更细粒度和开发友好性。 - 3. 可观测性统一用 OTel ：链路追踪、指标、日志建议用 OpenTelemetry 标准，Spring Cloud Micrometer 与 K8s 原生 Prometheus/Grafana 可无缝对接。 - 4. 版本管理与兼容性 ：Spring Cloud 只引入必要 starter，严格锁定 BOM，避免与 K8s Operator/CRD 冲突。
+lab128,128,CITI006,customer service platform chatbox in Webflux way.
+lab129,129,CITI007,mono flex SSE .
+lab130,130,CITI008,webflux exception handling
+lab131,131,MSXF007,start design normal java jar vs spring boot jar
+lab132,132,SANO001,2.* -> 3.* checklist
+lab133,133,SANO007,Actuator endpoint
+lab134,134,SANO008,loast test verify
+lab135,135,SANO009,Class Loading Optimization
+lab136,136,ANTG014,build unified exception handling from scratch start.spring.io
+lab137,137,ANTG014,Spring Boot 自带的统一异常  vs 企业二次封装的 #架构设计
+lab138,138,XXWJ006,观测 bean 的加载顺序，并验证调整顺序的办法。
+lab139,139,XXWJ007,BeanPostProcessor
+lab140,140,MSXF003,[Steps to build a custom Spring Boot Starter](https://www.google.com/search?q=build+your+own+spring+boot+starter)
+lab141,141,MSXF003,过去的项目里用过哪些公司自己写的 Starter 吗？加解、日志脱敏、接入配置中心的client
+lab142,142,PWCD004,create a mvp to compare sping and  spring boot
+lab143,143,PWCD013; PWCD014,Bean 如何确保线程安全 首选无状态设计（Stateless by Design）：在设计Service、Controller等组件时，极力避免使用成员变量来存储请求相关的数据。让它们成为纯粹的执行者，依赖注入其他无状态的Bean，处理从方法参数传入的数据。 使用线程安全的数据结构：如果确实需要共享状态，不要自己发明轮子。使用java.util.concurrent包提供的线程安全类，如AtomicInteger、ConcurrentHashMap等。 合理使用同步（Synchronization）：使用synchronized关键字或ReentrantLock来保护对共享状态的访问。但要特别小心，这会引入性能开销和死锁的风险。应该缩小同步代码块的范围，只保护必要的几行代码，而不是整个方法。 利用ThreadLocal： 如果状态是与当前线程绑定的（比如每个用户的请求上下文），ThreadLocal是一个非常好的选择。它为每个线程都提供了一个独立的变量副本，从而避免了线程间的竞争。Spring框架内部在管理事务上下文（TransactionSynchronizationManager）和请求上下文（RequestContextHolder）时，就大量使用了ThreadLocal。 选择正确的作用域：如果一个Bean天生就是有状态的，并且无法或不适合改造成线程安全的，那么也许它就不应该是一个singleton。可以考虑将其作用域改为prototype，这样每个使用者都会得到一个全新的、不被共享的实例。当然，这会带来额外的对象创建开销。
+lab144,144,KCZN023; KCZN024; PWCD016,reproduce circular dependency then resovle.
+lab145,145,PWCD020,practice in one cheatsheet
+lab146,146,ZTFU023,AOP in practice
+lab147,147,KCZN019,boot starting process
+lab148,148,KCZN020,生命周期主流程和关键扩展点。
+lab149,149,KCZN022,@Resource 适用的具体场景
+lab150,150,KCZN022,@Resource 和 @Autowired 一定不能相互替代的场景
+lab151,151,KCZN022,testability @Autowired 字段 vs 构造器注入（Constructor Injection）
+lab152,152,KCZN024,practice.
+lab153,153,STMT010; STMT011; STMT012,practice
+lab154,154,JITU008,解决办法是不是只有让客户端延长超时时间（修改超时时间配置）？ >已知发生超时broken pipe问题的是一个 POST接口，对应一个业务逻辑核心事务处理流程，返回值是处理完成后的关键业务信息Info 。客户端依赖此同步调用的结果，来进行下一步的页面展示。 >请问有哪些务实的解决办法？我能想到的解决办法只有让客户端延长超时时间（修改超时时间配置）？ 综合推荐方案 短期方案（1-2周实施） 1. 服务端性能优化 ：数据库索引、连接池调优、JVM参数优化 2. 客户端智能超时 ：动态调整超时时间，提供重试机制 中期方案（1-2个月实施） 1. 异步处理+轮询 ：保持接口语义不变，提升用户体验 2. 事务拆分 ：将长事务分解为多个短事务 长期方案（3-6个月实施） 1. SAGA模式 ：实现分布式事务管理 2. 渐进式响应 ：WebSocket实时推送，分阶段返回结果 实施建议 优先级排序： 1. 数据库和JVM优化 (立即实施) 2. 异步处理+轮询模式 (2周内) 3. 事务拆分优化 (1个月内) 4. 客户端超时优化 (作为兜底) 5. 渐进式响应 (长期规划)
+lab155,155,JITU008,复现各种方案，做成mvp，并配套集成测试。
+lab156,156,PWCD007; WDKJ023,翻代码单步调试代码
+lab157,157,SANO019,"try split domain/business in FPS, Test-OJ"
+lab158,158,SANO020,test pyramid & test doubles in practice
+lab159,159,SANO021,如何合理地定量地度量 e2e test和 unit-test的健康覆盖率？
+lab160,160,SANO023,以一个CRUD需求，动手实践TDD，创建对照组，对比不用TDD的代码质量。
