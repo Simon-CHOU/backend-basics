@@ -64,8 +64,13 @@ public class FileStorageService {
      */
     public String storeFile(MultipartFile file, String documentId) {
         try {
+            // Validate parameters
+            if (documentId == null || documentId.trim().isEmpty()) {
+                throw new IllegalArgumentException("Document ID cannot be null or empty");
+            }
+            
             // Validate file
-            if (file.isEmpty()) {
+            if (file == null || file.isEmpty()) {
                 throw new IllegalArgumentException("Cannot store empty file");
             }
 
@@ -107,6 +112,11 @@ public class FileStorageService {
      */
     public String storeEncryptedFile(File encryptedFile, String documentId, String originalFilename) {
         try {
+            // Validate parameters
+            if (documentId == null || documentId.trim().isEmpty()) {
+                throw new IllegalArgumentException("Document ID cannot be null or empty");
+            }
+            
             // Validate file
             if (!encryptedFile.exists() || encryptedFile.length() == 0) {
                 throw new IllegalArgumentException("Cannot store empty or non-existent file");
@@ -148,7 +158,7 @@ public class FileStorageService {
      */
     public String storeChunk(MultipartFile chunk, String sessionId, int chunkNumber) {
         try {
-            if (chunk.isEmpty()) {
+            if (chunk == null || chunk.isEmpty()) {
                 throw new IllegalArgumentException("Cannot store empty chunk");
             }
 
@@ -287,6 +297,9 @@ public class FileStorageService {
      */
     public String calculateFileHash(MultipartFile file) {
         try {
+            if (file == null) {
+                throw new IllegalArgumentException("File cannot be null");
+            }
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             try (InputStream inputStream = file.getInputStream()) {
                 byte[] buffer = new byte[8192];

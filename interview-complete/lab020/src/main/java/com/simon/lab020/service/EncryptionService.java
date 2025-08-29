@@ -12,6 +12,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -195,6 +196,17 @@ public class EncryptionService {
     }
 
     /**
+     * Encrypt string data in memory
+     *
+     * @param data the string data to encrypt
+     * @param encryptionKey the encryption key (Base64 encoded)
+     * @return encrypted data with IV prepended (Base64 encoded)
+     */
+    public String encryptData(String data, String encryptionKey) {
+        return encryptData(data.getBytes(StandardCharsets.UTF_8), encryptionKey);
+    }
+
+    /**
      * Decrypt data in memory
      *
      * @param encryptedData the encrypted data with IV prepended (Base64 encoded)
@@ -228,5 +240,17 @@ public class EncryptionService {
             log.error("Error decrypting data", e);
             throw new RuntimeException("Failed to decrypt data", e);
         }
+    }
+
+    /**
+     * Decrypt data in memory and return as string
+     *
+     * @param encryptedData the encrypted data with IV prepended (Base64 encoded)
+     * @param encryptionKey the encryption key (Base64 encoded)
+     * @return decrypted string data
+     */
+    public String decryptDataAsString(String encryptedData, String encryptionKey) {
+        byte[] decryptedBytes = decryptData(encryptedData, encryptionKey);
+        return new String(decryptedBytes, StandardCharsets.UTF_8);
     }
 }

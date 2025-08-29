@@ -43,7 +43,7 @@ public class FileUploadService {
     @Transactional
     public FileUploadResponse uploadFile(MultipartFile file, HttpServletRequest request) {
         try {
-            // Validate file
+            // Validate file first to avoid NullPointerException
             validateFile(file);
 
             // Generate document ID
@@ -94,7 +94,8 @@ public class FileUploadService {
             return createUploadResponse(metadata, "File uploaded successfully", true);
 
         } catch (Exception e) {
-            log.error("Failed to upload file: {}", file.getOriginalFilename(), e);
+            String filename = (file != null) ? file.getOriginalFilename() : "null";
+            log.error("Failed to upload file: {}", filename, e);
             return FileUploadResponse.builder()
                     .success(false)
                     .message("Failed to upload file: " + e.getMessage())
