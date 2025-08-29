@@ -39,7 +39,7 @@ import java.util.UUID;
 @Slf4j
 @Tag(name = "File Download", description = "File download operations")
 public class FileDownloadController {
-    private static final Logger log = LoggerFactory.getLogger(FileDownloadController.class);
+//    private static final Logger log= LoggerFactory.getLogger(FileDownloadController.class);
 
     private final FileDownloadService fileDownloadService;
     private final AuditLogService auditLogService;
