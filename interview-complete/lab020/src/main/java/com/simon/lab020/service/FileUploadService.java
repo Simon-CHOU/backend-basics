@@ -8,8 +8,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import jakarta.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,8 +68,8 @@ public class FileUploadService {
             // Generate encryption key
             String encryptionKey = encryptionService.generateEncryptionKey();
 
-            // Store file
-            String storagePath = fileStorageService.storeFile(file, documentId);
+            // Store and encrypt file
+            String storagePath = storeAndEncryptFile(file, documentId, encryptionKey);
 
             // Create file metadata
             FileMetadata metadata = new FileMetadata();
@@ -334,7 +338,7 @@ public class FileUploadService {
             String documentId = UUID.randomUUID().toString();
 
             // Assemble chunks
-            String storagePath = fileStorageService.assembleChunks(
+            String assembledPath = fileStorageService.assembleChunks(
                     session.getSessionId(),
                     session.getTotalChunks(),
                     documentId,
@@ -344,13 +348,33 @@ public class FileUploadService {
             // Generate encryption key
             String encryptionKey = encryptionService.generateEncryptionKey();
 
+            // Encrypt the assembled file
+            Path assembledFilePath = fileStorageService.loadFile(assembledPath);
+            File assembledFile = assembledFilePath.toFile();
+            File encryptedFile = new File(assembledFile.getAbsolutePath() + ".encrypted");
+            encryptionService.encryptFile(assembledFile, encryptedFile, encryptionKey);
+            
+            // Store the encrypted file
+            String encryptedPath = fileStorageService.storeEncryptedFile(encryptedFile, documentId, 
+                session.getOriginalFilename());
+            
+            // Clean up temporary files
+            if (encryptedFile.exists()) {
+                encryptedFile.delete();
+            }
+
+            // Delete the original assembled file (unencrypted)
+            if (assembledFile.exists()) {
+                assembledFile.delete();
+            }
+
             // Create file metadata
             FileMetadata metadata = new FileMetadata();
             metadata.setDocumentId(documentId);
             metadata.setOriginalFilename(session.getOriginalFilename());
             metadata.setFileSize(session.getTotalSize());
             metadata.setContentType(session.getContentType());
-            metadata.setFilePath(storagePath);
+            metadata.setFilePath(encryptedPath);
             metadata.setEncryptionKey(encryptionKey);
             metadata.setFileHash(session.getFileHash());
             metadata.setUploadDate(LocalDateTime.now());
@@ -411,6 +435,12 @@ public class FileUploadService {
             throw new IllegalArgumentException("Filename cannot be empty");
         }
 
+        // Validate filename for path traversal attacks
+        String filename = file.getOriginalFilename();
+        if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+            throw new IllegalArgumentException("Filename contains invalid path sequence");
+        }
+
         // Add more validation as needed (file size, type, etc.)
         if (file.getSize() > 100 * 1024 * 1024) { // 100MB limit for single file
             throw new IllegalArgumentException("File size exceeds maximum limit of 100MB");
@@ -441,11 +471,57 @@ public class FileUploadService {
     }
 
     /**
-     * Create upload response from file metadata
+     * Store and encrypt file
+     *
+     * @param file the multipart file to store
+     * @param documentId the document ID
+     * @param encryptionKey the encryption key
+     * @return the storage path
+     */
+    private String storeAndEncryptFile(MultipartFile file, String documentId, String encryptionKey) {
+        try {
+            // Create temporary file for original content
+            File tempOriginalFile = File.createTempFile("upload_original_", ".tmp");
+            tempOriginalFile.deleteOnExit();
+            
+            // Write original file content to temporary file
+            try (InputStream inputStream = file.getInputStream();
+                 FileOutputStream fos = new FileOutputStream(tempOriginalFile)) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    fos.write(buffer, 0, bytesRead);
+                }
+            }
+            
+            // Create temporary file for encrypted content
+            File tempEncryptedFile = File.createTempFile("upload_encrypted_", ".tmp");
+            tempEncryptedFile.deleteOnExit();
+            
+            // Encrypt the file
+            encryptionService.encryptFile(tempOriginalFile, tempEncryptedFile, encryptionKey);
+            
+            // Store the encrypted file using FileStorageService's internal logic
+            String storagePath = fileStorageService.storeEncryptedFile(tempEncryptedFile, documentId, file.getOriginalFilename());
+            
+            // Clean up temporary files
+            tempOriginalFile.delete();
+            tempEncryptedFile.delete();
+            
+            return storagePath;
+            
+        } catch (Exception e) {
+            log.error("Failed to store and encrypt file: {}", file.getOriginalFilename(), e);
+            throw new RuntimeException("Failed to store and encrypt file", e);
+        }
+    }
+
+    /**
+     * Create upload response
      *
      * @param metadata the file metadata
      * @param message the response message
-     * @param success the success flag
+     * @param success whether the operation was successful
      * @return upload response
      */
     private FileUploadResponse createUploadResponse(FileMetadata metadata, String message, boolean success) {

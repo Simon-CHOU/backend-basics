@@ -373,7 +373,7 @@ class FileManagementIntegrationTest {
     @Test
     void testHealthChecks() throws Exception {
         // Test upload service health
-        mockMvc.perform(get("/api/files/upload/health"))
+        mockMvc.perform(get("/api/files/health"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("File upload service is healthy"));
 

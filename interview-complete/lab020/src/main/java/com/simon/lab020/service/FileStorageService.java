@@ -98,6 +98,47 @@ public class FileStorageService {
     }
 
     /**
+     * Store an encrypted file and return the storage path
+     *
+     * @param encryptedFile the encrypted file to store
+     * @param documentId the document ID for organizing files
+     * @param originalFilename the original filename
+     * @return the relative storage path
+     */
+    public String storeEncryptedFile(File encryptedFile, String documentId, String originalFilename) {
+        try {
+            // Validate file
+            if (!encryptedFile.exists() || encryptedFile.length() == 0) {
+                throw new IllegalArgumentException("Cannot store empty or non-existent file");
+            }
+
+            String cleanFilename = StringUtils.cleanPath(originalFilename);
+            if (cleanFilename.contains("..")) {
+                throw new IllegalArgumentException("Filename contains invalid path sequence: " + originalFilename);
+            }
+
+            // Generate storage path: /year/month/day/documentId/filename
+            String datePath = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+            String filename = generateUniqueFilename(cleanFilename);
+            Path targetPath = basePath.resolve(datePath).resolve(documentId).resolve(filename);
+
+            // Create directories
+            Files.createDirectories(targetPath.getParent());
+
+            // Copy file
+            Files.copy(encryptedFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+            String relativePath = basePath.relativize(targetPath).toString().replace('\\', '/');
+            log.debug("Encrypted file stored: {} -> {}", originalFilename, relativePath);
+            return relativePath;
+
+        } catch (IOException e) {
+            log.error("Failed to store encrypted file: {}", originalFilename, e);
+            throw new RuntimeException("Failed to store encrypted file", e);
+        }
+    }
+
+    /**
      * Store a file chunk
      *
      * @param chunk the chunk data

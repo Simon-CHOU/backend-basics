@@ -64,9 +64,9 @@ public class FileDownloadService {
             
             // Load encrypted file from storage
             Path encryptedFilePath = fileStorageService.loadFile(fileMetadata.getFilePath());
-            Resource encryptedResource = new FileSystemResource(encryptedFilePath);
+            File encryptedFile = encryptedFilePath.toFile();
             
-            if (!encryptedResource.exists() || !encryptedResource.isReadable()) {
+            if (!encryptedFile.exists() || !encryptedFile.canRead()) {
                 log.error("File not accessible at path: {}", fileMetadata.getFilePath());
                 return createErrorResponse("File not accessible");
             }
@@ -75,7 +75,6 @@ public class FileDownloadService {
             File decryptedResourceFile;
             Resource decryptedResource;
             try {
-                File encryptedFile = encryptedResource.getFile();
                 // Create temporary file for decrypted content
                 decryptedResourceFile = File.createTempFile("decrypted_" + documentId, ".tmp");
                 decryptedResourceFile.deleteOnExit();

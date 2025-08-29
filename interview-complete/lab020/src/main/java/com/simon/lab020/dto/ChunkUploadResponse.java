@@ -39,6 +39,7 @@ public class ChunkUploadResponse {
     /**
      * Upload progress percentage (0-100)
      */
+    @com.fasterxml.jackson.annotation.JsonProperty("progress")
     private Double progressPercentage;
 
     /**

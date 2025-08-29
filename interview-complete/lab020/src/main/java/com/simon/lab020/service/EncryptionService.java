@@ -109,39 +109,43 @@ public class EncryptionService {
      */
     public void decryptFile(File inputFile, File outputFile, String encryptionKey) {
         try {
-            // Read all encrypted data first
-            byte[] encryptedData;
-            try (FileInputStream fis = new FileInputStream(inputFile)) {
-                encryptedData = fis.readAllBytes();
-            }
-            
-            // Extract IV from the beginning
-            if (encryptedData.length < IV_LENGTH) {
-                throw new RuntimeException("Invalid encrypted file format - too short");
-            }
-            
-            byte[] iv = new byte[IV_LENGTH];
-            System.arraycopy(encryptedData, 0, iv, 0, IV_LENGTH);
-            IvParameterSpec ivSpec = new IvParameterSpec(iv);
-            
-            // Extract the actual encrypted content
-            byte[] actualEncryptedData = new byte[encryptedData.length - IV_LENGTH];
-            System.arraycopy(encryptedData, IV_LENGTH, actualEncryptedData, 0, actualEncryptedData.length);
-
             // Create cipher
             Cipher cipher = Cipher.getInstance(encryptionProperties.getTransformation());
             SecretKeySpec keySpec = new SecretKeySpec(
                 Base64.getDecoder().decode(encryptionKey), 
                 encryptionProperties.getAlgorithm()
             );
-            cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
 
-            // Decrypt all data at once
-            byte[] decryptedData = cipher.doFinal(actualEncryptedData);
-            
-            // Write decrypted data to output file
-            try (FileOutputStream fos = new FileOutputStream(outputFile)) {
-                fos.write(decryptedData);
+            try (FileInputStream fis = new FileInputStream(inputFile);
+                 FileOutputStream fos = new FileOutputStream(outputFile)) {
+                
+                // Read IV from the beginning of the file
+                byte[] iv = new byte[IV_LENGTH];
+                int ivBytesRead = fis.read(iv);
+                if (ivBytesRead != IV_LENGTH) {
+                    throw new IOException("Failed to read IV from encrypted file");
+                }
+                
+                // Initialize cipher with IV
+                IvParameterSpec ivSpec = new IvParameterSpec(iv);
+                cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+                
+                // Process remaining encrypted data in chunks
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                
+                while ((bytesRead = fis.read(buffer)) != -1) {
+                    byte[] decryptedData = cipher.update(buffer, 0, bytesRead);
+                    if (decryptedData != null) {
+                        fos.write(decryptedData);
+                    }
+                }
+                
+                // Write final block
+                byte[] finalBlock = cipher.doFinal();
+                if (finalBlock != null) {
+                    fos.write(finalBlock);
+                }
             }
 
             log.debug("File decrypted successfully: {} -> {}", inputFile.getName(), outputFile.getName());

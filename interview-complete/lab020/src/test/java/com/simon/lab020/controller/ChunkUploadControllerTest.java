@@ -107,6 +107,7 @@ class ChunkUploadControllerTest {
 
         // Step 2: Upload chunks
         for (int i = 0; i < totalChunks; i++) {
+            int chunkNumber = i; // Chunk numbers start from 0
             int startPos = i * chunkSize;
             int endPos = (i == totalChunks - 1) ? fullBytes.length : (i + 1) * chunkSize;
             byte[] chunkData = new byte[endPos - startPos];
@@ -116,7 +117,7 @@ class ChunkUploadControllerTest {
             
             MockMultipartFile chunkFile = new MockMultipartFile(
                     "chunkFile",
-                    "chunk_" + i + ".part",
+                    "chunk_" + chunkNumber + ".part",
                     MediaType.APPLICATION_OCTET_STREAM_VALUE,
                     chunkData
             );
@@ -124,7 +125,7 @@ class ChunkUploadControllerTest {
             MvcResult chunkResult = mockMvc.perform(multipart("/api/files/upload/chunks")
                             .file(chunkFile)
                             .param("sessionId", sessionId)
-                            .param("chunkNumber", String.valueOf(i))
+                            .param("chunkNumber", String.valueOf(chunkNumber))
                             .param("totalChunks", String.valueOf(totalChunks))
                             .param("chunkHash", chunkHash)
                             .param("originalFilename", originalFilename)
@@ -134,8 +135,8 @@ class ChunkUploadControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.sessionId").value(sessionId))
-                    .andExpect(jsonPath("$.chunkNumber").value(i))
-                    .andExpect(jsonPath("$.uploadedChunks").value(i + 1))
+                    .andExpect(jsonPath("$.chunkNumber").value(chunkNumber))
+                    .andExpect(jsonPath("$.chunksUploaded").value(i + 1))
                     .andReturn();
 
             ChunkUploadResponse chunkResponse = objectMapper.readValue(
@@ -317,7 +318,7 @@ class ChunkUploadControllerTest {
                 initResult.getResponse().getContentAsString(), ChunkUploadResponse.class);
         String sessionId = initResponse.getSessionId();
 
-        // Upload chunks out of order: 2, 0, 1
+        // Upload chunks out of order: 2, 0, 1 (0-based indexing)
         int[] chunkOrder = {2, 0, 1};
         
         for (int i = 0; i < chunkOrder.length; i++) {

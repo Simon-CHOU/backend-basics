@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -135,7 +136,7 @@ public class FileUploadController {
     @PostMapping(value = "/upload/chunks", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ChunkUploadResponse> uploadChunk(
             @RequestParam("sessionId") @NotBlank String sessionId,
-            @RequestParam("chunkNumber") @Positive int chunkNumber,
+            @RequestParam("chunkNumber") @Min(0) int chunkNumber,
             @RequestParam("totalChunks") @Positive int totalChunks,
             @RequestParam("chunkFile") @NotNull MultipartFile chunkFile,
             @RequestParam("chunkHash") @NotBlank String chunkHash,
