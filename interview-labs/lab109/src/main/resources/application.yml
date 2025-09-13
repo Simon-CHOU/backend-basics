@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: distributed-transaction-demo
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/transaction_demo
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    
+logging:
+  level:
+    com.example.demo: DEBUG
+    org.springframework.transaction: DEBUG
+    org.springframework.amqp: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
