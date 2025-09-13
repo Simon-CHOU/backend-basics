@@ -43,9 +43,11 @@ public class DataGenerator {
      * 生成测试数据
      */
     private static void generateTestData() throws SQLException {
-        String sql = """INSERT INTO test_data 
-                       (user_id, username, email, age, city, status, score, description) 
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)""";
+        String sql = """
+                INSERT INTO test_data 
+                (user_id, username, email, age, city, status, score, description) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """;
         
         try (Connection conn = DatabaseConfig.getConnection()) {
             // 关闭自动提交以提高批量插入性能

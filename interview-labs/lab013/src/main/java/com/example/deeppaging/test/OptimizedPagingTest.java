@@ -92,12 +92,14 @@ public class OptimizedPagingTest {
      * 先通过子查询获取ID，再关联查询完整数据
      */
     private static void testSubqueryOptimization(int offset, int pageSize) {
-        String sql = """SELECT t.id, t.user_id, t.username, t.email, t.age, t.city, t.created_at 
-                       FROM test_data t 
-                       INNER JOIN (
-                           SELECT id FROM test_data ORDER BY id LIMIT ?, ?
-                       ) tmp ON t.id = tmp.id 
-                       ORDER BY t.id""";
+        String sql = """
+                SELECT t.id, t.user_id, t.username, t.email, t.age, t.city, t.created_at 
+                FROM test_data t 
+                INNER JOIN (
+                    SELECT id FROM test_data ORDER BY id LIMIT ?, ?
+                ) tmp ON t.id = tmp.id 
+                ORDER BY t.id
+                """;
         
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -209,12 +211,14 @@ public class OptimizedPagingTest {
     }
     
     private static void explainSubqueryOptimization(int offset, int pageSize) {
-        String sql = """EXPLAIN SELECT t.id, t.user_id, t.username, t.email, t.age, t.city, t.created_at 
-                       FROM test_data t 
-                       INNER JOIN (
-                           SELECT id FROM test_data ORDER BY id LIMIT ?, ?
-                       ) tmp ON t.id = tmp.id 
-                       ORDER BY t.id""";
+        String sql = """
+                EXPLAIN SELECT t.id, t.user_id, t.username, t.email, t.age, t.city, t.created_at 
+                FROM test_data t 
+                INNER JOIN (
+                    SELECT id FROM test_data ORDER BY id LIMIT ?, ?
+                ) tmp ON t.id = tmp.id 
+                ORDER BY t.id
+                """;
         executeExplain("子查询优化", sql, offset, pageSize);
     }
     

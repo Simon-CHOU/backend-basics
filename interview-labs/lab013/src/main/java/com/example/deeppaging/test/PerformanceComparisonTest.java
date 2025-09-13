@@ -83,12 +83,14 @@ public class PerformanceComparisonTest {
      * 测试子查询优化性能
      */
     private static PerformanceResult testSubqueryOptimizationPerformance(int offset, int pageSize) {
-        String sql = """SELECT t.id, t.user_id, t.username, t.email, t.age, t.city, t.created_at 
-                       FROM test_data t 
-                       INNER JOIN (
-                           SELECT id FROM test_data ORDER BY id LIMIT ?, ?
-                       ) tmp ON t.id = tmp.id 
-                       ORDER BY t.id""";
+        String sql = """
+                SELECT t.id, t.user_id, t.username, t.email, t.age, t.city, t.created_at 
+                FROM test_data t 
+                INNER JOIN (
+                    SELECT id FROM test_data ORDER BY id LIMIT ?, ?
+                ) tmp ON t.id = tmp.id 
+                ORDER BY t.id
+                """;
         return executePerformanceTest(sql, offset, pageSize);
     }
     
