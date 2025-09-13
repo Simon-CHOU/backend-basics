@@ -49,7 +49,7 @@ mvn clean compile
 
 ```bash
 # 运行主实验程序
-mvn exec:java -Dexec.mainClass="com.example.deeppaging.DeepPagingExperiment"
+mvn exec:java
 ```
 
 ## 实验步骤
