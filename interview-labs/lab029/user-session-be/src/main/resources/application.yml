@@ -1,0 +1,95 @@
+# Spring Boot 应用配置
+spring:
+  application:
+    name: user-session-service
+  
+  # Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: # 如果Redis设置了密码，在这里配置
+      database: 0
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+  
+  # JSON配置
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+  
+  # 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+# 日志配置
+logging:
+  level:
+    com.interview.usersession: DEBUG
+    org.springframework.data.redis: INFO
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/user-session-service.log
+    max-size: 100MB
+    max-history: 30
+
+# 应用自定义配置
+app:
+  session:
+    # 会话过期时间（秒）
+    expire-seconds: 86400  # 24小时
+    # Redis键前缀
+    redis-key-prefix: "user:session:"
+  
+  security:
+    # 排除的路径（不需要认证）
+    excluded-paths:
+      - "/api/auth/login"
+      - "/api/auth/logout"
+      - "/api/health/**"
+      - "/actuator/**"
+      - "/swagger-ui/**"
+      - "/v3/api-docs/**"
+      - "/favicon.ico"
+
+# Actuator监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  info:
+    env:
+      enabled: true
+
+# 应用信息
+info:
+  app:
+    name: User Session Service
+    description: 用户会话管理服务
+    version: 1.0.0
+    author: Interview Lab
+  build:
+    java-version: ${java.version}
+    spring-boot-version: ${spring-boot.version}

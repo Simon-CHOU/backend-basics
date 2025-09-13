@@ -1,0 +1,106 @@
+# Docker环境配置文件
+spring:
+  application:
+    name: user-session-service
+  
+  # Redis配置
+  redis:
+    host: redis
+    port: 6379
+    database: 0
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+      shutdown-timeout: 100ms
+  
+  # JSON配置
+  jackson:
+    default-property-inclusion: non_null
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.interview.usersession: DEBUG
+    org.springframework.web: INFO
+    org.springframework.data.redis: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /app/logs/user-session.log
+    max-size: 100MB
+    max-history: 30
+    total-size-cap: 1GB
+
+# 应用自定义配置
+app:
+  session:
+    # 会话过期时间（秒）
+    expire-time: 3600
+    # Redis键前缀
+    redis-key-prefix: "user:session:"
+  
+  # 排除路径（不需要认证）
+  exclude-paths:
+    - "/api/auth/login"
+    - "/api/auth/logout"
+    - "/api/health"
+    - "/api/health/detailed"
+    - "/error"
+    - "/favicon.ico"
+
+# Actuator监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: always
+  health:
+    redis:
+      enabled: true
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+
+# 应用信息
+info:
+  app:
+    name: ${spring.application.name}
+    description: 用户会话管理系统
+    version: 1.0.0
+    encoding: UTF-8
+    java:
+      version: ${java.version}
+  build:
+    time: ${maven.build.timestamp:unknown}

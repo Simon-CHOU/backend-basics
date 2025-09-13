@@ -17,7 +17,7 @@ spring boot 服务会有一个命名类似 AccessInterceptor的拦截器，把he
 我的记忆可能不准确，如果你知道我在说什么，可以用行业公认的最佳实践，而非完全遵照我回忆的字面描述。
 编码遵循TDD 和 Clean Code的记录。
 创建spring boot 项目时请按照 start.spring.io 的规范来。
-前端模拟登录需要一个最小化的登录页面，请在当前目录下新建两个项目 -fe代表前端（frontend）-be代表后端（backend）
+前端模拟登录需要一个最小化的登录页面，请在当前目录下新建两个目录 XXX-fe代表前端（frontend）XXX-be代表后端（backend），其中XXX为你拟定的合理项目名
 前端用 reactjs + typescript 等现代化前端技术，实现最小化的登录页面，用户名密码即可，登录后跳转到首页，首页用一个banner占位即可，不必有负责元素。
 样式朴素到和html 裸标签一样，千万不要引入过多的样式和其他npm依赖。
 前后端分离。
