@@ -2,7 +2,7 @@
 DROP TABLE IF EXISTS `data_statistics`
 
 CREATE TABLE `bip_dashboard_statistics` (
- `id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci `  NOT NULL    COMMENT "abc",
+ `id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci  NOT NULL   COMMENT "abc",
  `year` varchar(50) CHARACTER SET utm8mb4 COLLATE utm8mb4_general_ci NOT NULL COMMENT "abc",
  `month` varchar(50) CHARACTER SET utm8mb4 COLLATE utm8mb4_general_ci NOT NULL COMMENT "abc",
  `area_id` varchar(50) CHARACTER SET utm8mb4 COLLATE utm8mb4_general_ci NOT NULL COMMENT "abc",

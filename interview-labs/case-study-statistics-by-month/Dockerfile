@@ -20,9 +20,9 @@ WORKDIR /app
 
 # JVM 与数据源默认配置（可被运行时环境变量覆盖）
 ENV JAVA_OPTS="" \
-    SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/case_study_db \
-    SPRING_DATASOURCE_USERNAME=postgres \
-    SPRING_DATASOURCE_PASSWORD=postgres \
+    SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/case_study_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=utf8 \
+    SPRING_DATASOURCE_USERNAME=app_user \
+    SPRING_DATASOURCE_PASSWORD=app_password \
     SPRING_JPA_HIBERNATE_DDL_AUTO=none \
     SPRING_SQL_INIT_MODE=never \
     SPRING_FLYWAY_ENABLED=false
