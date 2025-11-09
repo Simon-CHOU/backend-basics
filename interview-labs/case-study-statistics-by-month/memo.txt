@@ -5,3 +5,5 @@ docker exec -it csbm-mysql mysql -uapp_user -papp_password -D case_study_db
 docker exec -it csbm-mysql mysql -uapp_user -p -D case_study_db
 
 mvn spring-boot:run
+
+docker compose up -d db 
