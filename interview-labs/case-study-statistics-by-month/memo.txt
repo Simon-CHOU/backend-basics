@@ -7,3 +7,10 @@ docker exec -it csbm-mysql mysql -uapp_user -p -D case_study_db
 mvn spring-boot:run
 
 docker compose up -d db 
+
+主动型客户数量  type, time   -table customer
+配合行客户数量 type, time  -table customer
+解绑数量 绑定流水表- 简化 累计解绑次数 （idX idY del_flag(0=绑定,1=删除)time   -table binding
+项目信息累计数量 type, time -table project
+有效项目累计数量 type, time -table project
+重要BFO ID项目累计数量 type, time -table project
