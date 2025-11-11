@@ -1,0 +1,25 @@
+http://localhost:8080/api/statistics/trigger
+
+2025-11-11T21:37:04.989+08:00  INFO 26544 --- [case-study-statistics-by-month] [nio-8080-exec-7] c.s.c.controller.StatisticsController    : 接收到手动触发统计任务的请求
+2025-11-11T21:37:04.989+08:00  INFO 26544 --- [case-study-statistics-by-month] [nio-8080-exec-7] c.s.c.service.StatisticsTaskService      : 手动触发统计任务...
+2025-11-11T21:37:04.990+08:00 ERROR 26544 --- [case-study-statistics-by-month] [onPool-worker-1] c.s.c.service.StatisticsTaskService      : 统计任务执行失败
+
+org.apache.ibatis.binding.BindingException: Invalid bound statement (not found): com.simon.case_study_statistics_by_month.mapper.StatisticsMapper.selectMonthlyStatistics
+	at org.apache.ibatis.binding.MapperMethod$SqlCommand.<init>(MapperMethod.java:229) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.binding.MapperMethod.<init>(MapperMethod.java:53) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.binding.MapperProxy.lambda$cachedInvoker$0(MapperProxy.java:96) ~[mybatis-3.5.14.jar:3.5.14]
+	at java.base/java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1708) ~[na:na]
+	at org.apache.ibatis.util.MapUtil.computeIfAbsent(MapUtil.java:36) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.binding.MapperProxy.cachedInvoker(MapperProxy.java:94) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.binding.MapperProxy.invoke(MapperProxy.java:86) ~[mybatis-3.5.14.jar:3.5.14]
+	at jdk.proxy2/jdk.proxy2.$Proxy85.selectMonthlyStatistics(Unknown Source) ~[na:na]
+	at com.simon.case_study_statistics_by_month.service.StatisticsTaskService.lambda$executeStatisticsTask$0(StatisticsTaskService.java:46) ~[classes/:na]
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1804) ~[na:na]
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.exec(CompletableFuture.java:1796) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188) ~[na:na]
+
+2025-11-11T21:37:04.990+08:00  INFO 26544 --- [case-study-statistics-by-month] [onPool-worker-1] c.s.c.controller.StatisticsController    : 手动统计任务执行完成

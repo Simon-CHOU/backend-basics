@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.simon.case_study_statistics_by_month.mapper.StatisticsMapper">
+
+    <!-- 统计查询结果映射 -->
+    <resultMap id="StatisticsResultMap" type="com.simon.case_study_statistics_by_month.domain.StatisticsResult">
+        <result property="yyyyMm" column="yyyy-MM"/>
+        <result property="proactiveCustomerCount" column="主动型客户数量"/>
+        <result property="cooperativeCustomerCount" column="配合行客户数量"/>
+        <result property="unbindingCount" column="解绑数量"/>
+        <result property="totalProjectCount" column="项目信息累计数量"/>
+        <result property="activeProjectCount" column="有效项目累计数量"/>
+        <result property="bfoProjectCount" column="重要BFO ID项目累计数量"/>
+    </resultMap>
+
+    <!-- 月度统计查询 -->
+    <select id="selectMonthlyStatistics" resultMap="StatisticsResultMap">
+        WITH
+        all_months AS (
+            SELECT DISTINCT DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm FROM bip_customer
+            UNION
+            SELECT DISTINCT DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm FROM bip_project
+            UNION
+            SELECT DISTINCT DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm FROM bip_binding
+        ),
+
+        cte1 AS (
+            SELECT
+                DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm,
+                COUNT(CASE WHEN customer_type = 'Type0' THEN 1 END) AS new_proactive_customers,
+                COUNT(CASE WHEN customer_type = 'Type1' THEN 1 END) AS new_cooperative_customers
+            FROM
+                bip_customer
+            WHERE
+                del_flag = '0'
+            GROUP BY
+                yyyy_mm
+        ),
+
+        cte2 AS (
+            SELECT
+                DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm,
+                COUNT(id) AS new_unbindings
+            FROM
+                bip_binding
+            WHERE
+                del_flag = '1'
+            GROUP BY
+                yyyy_mm
+        ),
+
+        cte3 AS (
+            SELECT
+                DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm,
+                COUNT(id) AS new_total_projects,
+                COUNT(CASE WHEN del_flag = '0' THEN 1 END) AS new_active_projects,
+                COUNT(CASE WHEN project_type = 'Type0' THEN 1 END) AS new_bfo_projects
+            FROM
+                bip_project
+            GROUP BY
+                yyyy_mm
+        ),
+
+        monthly_increments AS (
+            SELECT
+                m.yyyy_mm,
+                COALESCE(c1.new_proactive_customers, 0) AS new_proactive_customers,
+                COALESCE(c1.new_cooperative_customers, 0) AS new_cooperative_customers,
+                COALESCE(c2.new_unbindings, 0) AS new_unbindings,
+                COALESCE(c3.new_total_projects, 0) AS new_total_projects,
+                COALESCE(c3.new_active_projects, 0) AS new_active_projects,
+                COALESCE(c3.new_bfo_projects, 0) AS new_bfo_projects
+            FROM all_months m
+            LEFT JOIN cte1 c1 ON m.yyyy_mm = c1.yyyy_mm
+            LEFT JOIN cte2 c2 ON m.yyyy_mm = c2.yyyy_mm
+            LEFT JOIN cte3 c3 ON m.yyyy_mm = c3.yyyy_mm
+        )
+
+        SELECT
+            i.yyyy_mm AS `yyyy-MM`,
+            SUM(i.new_proactive_customers) OVER (ORDER BY i.yyyy_mm) AS `主动型客户数量`,
+            SUM(i.new_cooperative_customers) OVER (ORDER BY i.yyyy_mm) AS `配合行客户数量`,
+            SUM(i.new_unbindings) OVER (ORDER BY i.yyyy_mm) AS `解绑数量`,
+            SUM(i.new_total_projects) OVER (ORDER BY i.yyyy_mm) AS `项目信息累计数量`,
+            SUM(i.new_active_projects) OVER (ORDER BY i.yyyy_mm) AS `有效项目累计数量`,
+            SUM(i.new_bfo_projects) OVER (ORDER BY i.yyyy_mm) AS `重要BFO ID项目累计数量`
+        FROM
+            monthly_increments i
+        ORDER BY
+            i.yyyy_mm
+    </select>
+
+    <!-- 插入看板统计数据 -->
+    <insert id="insertDashboardStatistics">
+        INSERT INTO bip_dashboard_statistics (
+            id, year, month, area_id, area_name, retailer_name, retailer_id,
+            task, sub_task, result, unit, remark, del_flag, created_by, create_time, update_by, update_time
+        ) VALUES (
+            UUID(), #{year}, #{month}, NULL, NULL, #{retailerName}, #{retailerId},
+            #{task}, #{subTask}, #{result}, #{unit}, #{remark}, '0', 'system', NOW(), 'system', NOW()
+        )
+    </insert>
+
+</mapper>
