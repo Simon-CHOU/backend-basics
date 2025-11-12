@@ -1,65 +1,94 @@
 package com.simon.case_study_statistics_by_month.domain;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * 统计查询结果DTO
  */
 public class StatisticsResult {
+
     private String yyyyMm;
-    private Integer proactiveCustomerCount;
-    private Integer cooperativeCustomerCount;
-    private Integer unbindingCount;
-    private Integer totalProjectCount;
-    private Integer activeProjectCount;
-    private Integer bfoProjectCount;
-    private LocalDateTime createTime;
+    private String retailerName;
+    private String retailerId;
+    private Long proactiveCustomerCount;
+    private Long cooperativeCustomerCount;
+    private Long unbindingCount;
+    private Long totalProjectCount;
+    private Long activeProjectCount;
+    private Long bfoProjectCount;
+    private Date createTime;
 
     // 构造函数
     public StatisticsResult() {}
 
-    public StatisticsResult(String yyyyMm, Integer proactiveCustomerCount, Integer cooperativeCustomerCount, 
-                          Integer unbindingCount, Integer totalProjectCount, Integer activeProjectCount, 
-                          Integer bfoProjectCount) {
+    public StatisticsResult(String yyyyMm, String retailerName, String retailerId, Long proactiveCustomerCount, Long cooperativeCustomerCount, Long unbindingCount, Long totalProjectCount, Long activeProjectCount, Long bfoProjectCount, Date createTime) {
         this.yyyyMm = yyyyMm;
+        this.retailerName = retailerName;
+        this.retailerId = retailerId;
         this.proactiveCustomerCount = proactiveCustomerCount;
         this.cooperativeCustomerCount = cooperativeCustomerCount;
         this.unbindingCount = unbindingCount;
         this.totalProjectCount = totalProjectCount;
         this.activeProjectCount = activeProjectCount;
         this.bfoProjectCount = bfoProjectCount;
-        this.createTime = LocalDateTime.now();
+        this.createTime = createTime;
     }
 
     // Getter和Setter方法
-    public String getYyyyMm() { return yyyyMm; }
-    public void setYyyyMm(String yyyyMm) { this.yyyyMm = yyyyMm; }
+    public String getYyyyMm() {
+        return yyyyMm;
+    }
 
-    public Integer getProactiveCustomerCount() { return proactiveCustomerCount; }
-    public void setProactiveCustomerCount(Integer proactiveCustomerCount) { this.proactiveCustomerCount = proactiveCustomerCount; }
+    public void setYyyyMm(String yyyyMm) {
+        this.yyyyMm = yyyyMm;
+    }
 
-    public Integer getCooperativeCustomerCount() { return cooperativeCustomerCount; }
-    public void setCooperativeCustomerCount(Integer cooperativeCustomerCount) { this.cooperativeCustomerCount = cooperativeCustomerCount; }
+    public String getRetailerName() {
+        return retailerName;
+    }
 
-    public Integer getUnbindingCount() { return unbindingCount; }
-    public void setUnbindingCount(Integer unbindingCount) { this.unbindingCount = unbindingCount; }
+    public void setRetailerName(String retailerName) {
+        this.retailerName = retailerName;
+    }
 
-    public Integer getTotalProjectCount() { return totalProjectCount; }
-    public void setTotalProjectCount(Integer totalProjectCount) { this.totalProjectCount = totalProjectCount; }
+    public String getRetailerId() {
+        return retailerId;
+    }
 
-    public Integer getActiveProjectCount() { return activeProjectCount; }
-    public void setActiveProjectCount(Integer activeProjectCount) { this.activeProjectCount = activeProjectCount; }
+    public void setRetailerId(String retailerId) {
+        this.retailerId = retailerId;
+    }
 
-    public Integer getBfoProjectCount() { return bfoProjectCount; }
-    public void setBfoProjectCount(Integer bfoProjectCount) { this.bfoProjectCount = bfoProjectCount; }
+    public Long getProactiveCustomerCount() {
+        return proactiveCustomerCount;
+    }
+    public void setProactiveCustomerCount(Long proactiveCustomerCount) { this.proactiveCustomerCount = proactiveCustomerCount; }
 
-    public LocalDateTime getCreateTime() { return createTime; }
-    public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
+    public Long getCooperativeCustomerCount() { return cooperativeCustomerCount; }
+    public void setCooperativeCustomerCount(Long cooperativeCustomerCount) { this.cooperativeCustomerCount = cooperativeCustomerCount; }
+
+    public Long getUnbindingCount() { return unbindingCount; }
+    public void setUnbindingCount(Long unbindingCount) { this.unbindingCount = unbindingCount; }
+
+    public Long getTotalProjectCount() { return totalProjectCount; }
+    public void setTotalProjectCount(Long totalProjectCount) { this.totalProjectCount = totalProjectCount; }
+
+    public Long getActiveProjectCount() { return activeProjectCount; }
+    public void setActiveProjectCount(Long activeProjectCount) { this.activeProjectCount = activeProjectCount; }
+
+    public Long getBfoProjectCount() { return bfoProjectCount; }
+    public void setBfoProjectCount(Long bfoProjectCount) { this.bfoProjectCount = bfoProjectCount; }
+
+    public Date getCreateTime() { return createTime; }
+    public void setCreateTime(Date createTime) { this.createTime = createTime; }
 
     @Override
     public String toString() {
         return "StatisticsResult{" +
                 "yyyyMm='" + yyyyMm + '\'' +
+                ", retailerName='" + retailerName + '\'' +
+                ", retailerId='" + retailerId + '\'' +
                 ", proactiveCustomerCount=" + proactiveCustomerCount +
                 ", cooperativeCustomerCount=" + cooperativeCustomerCount +
                 ", unbindingCount=" + unbindingCount +

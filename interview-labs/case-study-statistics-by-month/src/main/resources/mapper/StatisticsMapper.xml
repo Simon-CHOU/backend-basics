@@ -6,90 +6,112 @@
 
     <!-- 统计查询结果映射 -->
     <resultMap id="StatisticsResultMap" type="com.simon.case_study_statistics_by_month.domain.StatisticsResult">
-        <result property="yyyyMm" column="yyyy-MM"/>
-        <result property="proactiveCustomerCount" column="主动型客户数量"/>
-        <result property="cooperativeCustomerCount" column="配合行客户数量"/>
-        <result property="unbindingCount" column="解绑数量"/>
-        <result property="totalProjectCount" column="项目信息累计数量"/>
-        <result property="activeProjectCount" column="有效项目累计数量"/>
-        <result property="bfoProjectCount" column="重要BFO ID项目累计数量"/>
+        <result property="yyyyMm" column="yyyy_mm"/>
+        <result property="retailerName" column="retailer_name"/>
+        <result property="retailerId" column="retailer_id"/>
+        <result property="proactiveCustomerCount" column="proactive_customer_count"/>
+        <result property="cooperativeCustomerCount" column="cooperative_customer_count"/>
+        <result property="unbindingCount" column="unbinding_count"/>
+        <result property="totalProjectCount" column="total_project_count"/>
+        <result property="activeProjectCount" column="active_project_count"/>
+        <result property="bfoProjectCount" column="bfo_project_count"/>
     </resultMap>
 
     <!-- 月度统计查询 -->
     <select id="selectMonthlyStatistics" resultMap="StatisticsResultMap">
         WITH
-        all_months AS (
-            SELECT DISTINCT DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm FROM bip_customer
+        all_customer_months AS (
+            SELECT DISTINCT DATE_FORMAT(c.create_time, '%Y-%m') AS yyyy_mm, c.id AS retailer_id
+            FROM bip_customer c
             UNION
-            SELECT DISTINCT DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm FROM bip_project
+            SELECT DISTINCT DATE_FORMAT(b.create_time, '%Y-%m') AS yyyy_mm, b.customer_id AS retailer_id
+            FROM bip_binding b
             UNION
-            SELECT DISTINCT DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm FROM bip_binding
+            SELECT DISTINCT DATE_FORMAT(p.create_time, '%Y-%m') AS yyyy_mm, b.customer_id AS retailer_id
+            FROM bip_project p
+            JOIN bip_binding b ON b.project_id = p.id
+        ),
+
+        customer_info AS (
+            SELECT
+                c.id AS retailer_id,
+                MAX(c.customer_name) as retailer_name
+            FROM bip_customer c
+            GROUP BY c.id
         ),
 
         cte1 AS (
             SELECT
-                DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm,
-                COUNT(CASE WHEN customer_type = 'Type0' THEN 1 END) AS new_proactive_customers,
-                COUNT(CASE WHEN customer_type = 'Type1' THEN 1 END) AS new_cooperative_customers
+                DATE_FORMAT(c.create_time, '%Y-%m') AS yyyy_mm,
+                c.id AS retailer_id,
+                COUNT(CASE WHEN c.customer_type = 'Type0' THEN 1 END) AS new_proactive_customers,
+                COUNT(CASE WHEN c.customer_type = 'Type1' THEN 1 END) AS new_cooperative_customers
             FROM
-                bip_customer
+                bip_customer c
             WHERE
-                del_flag = '0'
+                c.del_flag = '0'
             GROUP BY
-                yyyy_mm
+                yyyy_mm, retailer_id
         ),
 
         cte2 AS (
             SELECT
-                DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm,
-                COUNT(id) AS new_unbindings
+                DATE_FORMAT(b.create_time, '%Y-%m') AS yyyy_mm,
+                b.customer_id AS retailer_id,
+                COUNT(b.id) AS new_unbindings
             FROM
-                bip_binding
+                bip_binding b
             WHERE
-                del_flag = '1'
+                b.del_flag = '1'
             GROUP BY
-                yyyy_mm
+                yyyy_mm, retailer_id
         ),
 
         cte3 AS (
             SELECT
-                DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm,
-                COUNT(id) AS new_total_projects,
-                COUNT(CASE WHEN del_flag = '0' THEN 1 END) AS new_active_projects,
-                COUNT(CASE WHEN project_type = 'Type0' THEN 1 END) AS new_bfo_projects
+                DATE_FORMAT(p.create_time, '%Y-%m') AS yyyy_mm,
+                b.customer_id AS retailer_id,
+                COUNT(p.id) AS new_total_projects,
+                COUNT(CASE WHEN p.del_flag = '0' THEN 1 END) AS new_active_projects,
+                0 AS new_bfo_projects
             FROM
-                bip_project
+                bip_project p
+            JOIN bip_binding b ON b.project_id = p.id
             GROUP BY
-                yyyy_mm
+                yyyy_mm, retailer_id
         ),
 
         monthly_increments AS (
             SELECT
                 m.yyyy_mm,
+                m.retailer_id,
                 COALESCE(c1.new_proactive_customers, 0) AS new_proactive_customers,
                 COALESCE(c1.new_cooperative_customers, 0) AS new_cooperative_customers,
                 COALESCE(c2.new_unbindings, 0) AS new_unbindings,
                 COALESCE(c3.new_total_projects, 0) AS new_total_projects,
                 COALESCE(c3.new_active_projects, 0) AS new_active_projects,
                 COALESCE(c3.new_bfo_projects, 0) AS new_bfo_projects
-            FROM all_months m
-            LEFT JOIN cte1 c1 ON m.yyyy_mm = c1.yyyy_mm
-            LEFT JOIN cte2 c2 ON m.yyyy_mm = c2.yyyy_mm
-            LEFT JOIN cte3 c3 ON m.yyyy_mm = c3.yyyy_mm
+            FROM all_customer_months m
+            LEFT JOIN cte1 c1 ON m.yyyy_mm = c1.yyyy_mm AND m.retailer_id = c1.retailer_id
+            LEFT JOIN cte2 c2 ON m.yyyy_mm = c2.yyyy_mm AND m.retailer_id = c2.retailer_id
+            LEFT JOIN cte3 c3 ON m.yyyy_mm = c3.yyyy_mm AND m.retailer_id = c3.retailer_id
         )
 
         SELECT
-            i.yyyy_mm AS `yyyy-MM`,
-            SUM(i.new_proactive_customers) OVER (ORDER BY i.yyyy_mm) AS `主动型客户数量`,
-            SUM(i.new_cooperative_customers) OVER (ORDER BY i.yyyy_mm) AS `配合行客户数量`,
-            SUM(i.new_unbindings) OVER (ORDER BY i.yyyy_mm) AS `解绑数量`,
-            SUM(i.new_total_projects) OVER (ORDER BY i.yyyy_mm) AS `项目信息累计数量`,
-            SUM(i.new_active_projects) OVER (ORDER BY i.yyyy_mm) AS `有效项目累计数量`,
-            SUM(i.new_bfo_projects) OVER (ORDER BY i.yyyy_mm) AS `重要BFO ID项目累计数量`
+            i.yyyy_mm,
+            ci.retailer_name,
+            i.retailer_id,
+            SUM(i.new_proactive_customers) OVER (PARTITION BY i.retailer_id ORDER BY i.yyyy_mm) AS proactive_customer_count,
+            SUM(i.new_cooperative_customers) OVER (PARTITION BY i.retailer_id ORDER BY i.yyyy_mm) AS cooperative_customer_count,
+            SUM(i.new_unbindings) OVER (PARTITION BY i.retailer_id ORDER BY i.yyyy_mm) AS unbinding_count,
+            SUM(i.new_total_projects) OVER (PARTITION BY i.retailer_id ORDER BY i.yyyy_mm) AS total_project_count,
+            SUM(i.new_active_projects) OVER (PARTITION BY i.retailer_id ORDER BY i.yyyy_mm) AS active_project_count,
+            SUM(i.new_bfo_projects) OVER (PARTITION BY i.retailer_id ORDER BY i.yyyy_mm) AS bfo_project_count
         FROM
             monthly_increments i
+        LEFT JOIN customer_info ci ON i.retailer_id = ci.retailer_id
         ORDER BY
-            i.yyyy_mm
+            ci.retailer_name, i.retailer_id, i.yyyy_mm
     </select>
 
     <!-- 插入看板统计数据 -->

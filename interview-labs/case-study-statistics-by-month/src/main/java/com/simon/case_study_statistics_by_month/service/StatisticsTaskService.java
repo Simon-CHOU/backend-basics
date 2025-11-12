@@ -68,14 +68,16 @@ public class StatisticsTaskService {
             String[] dateParts = result.getYyyyMm().split("-");
             String year = dateParts[0];
             String month = dateParts[1];
+            String retailerName = result.getRetailerName();
+            String retailerId = result.getRetailerId();
 
             // 保存各项统计指标
-            saveStatisticItem(year, month, "主动型客户数量", result.getProactiveCustomerCount().toString());
-            saveStatisticItem(year, month, "配合行客户数量", result.getCooperativeCustomerCount().toString());
-            saveStatisticItem(year, month, "解绑数量", result.getUnbindingCount().toString());
-            saveStatisticItem(year, month, "项目信息累计数量", result.getTotalProjectCount().toString());
-            saveStatisticItem(year, month, "有效项目累计数量", result.getActiveProjectCount().toString());
-            saveStatisticItem(year, month, "重要BFO ID项目累计数量", result.getBfoProjectCount().toString());
+            saveStatisticItem(year, month, retailerName, retailerId, "主动型客户数量", result.getProactiveCustomerCount().toString());
+            saveStatisticItem(year, month, retailerName, retailerId, "配合行客户数量", result.getCooperativeCustomerCount().toString());
+            saveStatisticItem(year, month, retailerName, retailerId, "解绑数量", result.getUnbindingCount().toString());
+            saveStatisticItem(year, month, retailerName, retailerId, "项目信息累计数量", result.getTotalProjectCount().toString());
+            saveStatisticItem(year, month, retailerName, retailerId, "有效项目累计数量", result.getActiveProjectCount().toString());
+            saveStatisticItem(year, month, retailerName, retailerId, "重要BFO ID项目累计数量", result.getBfoProjectCount().toString());
 
             logger.debug("已处理 {} 的统计数据", result.getYyyyMm());
             
@@ -87,13 +89,13 @@ public class StatisticsTaskService {
     /**
      * 保存单个统计项到看板表
      */
-    private void saveStatisticItem(String year, String month, String subTask, String resultValue) {
+    private void saveStatisticItem(String year, String month, String retailerName, String retailerId, String subTask, String resultValue) {
         try {
             int affectedRows = statisticsMapper.insertDashboardStatistics(
                 year, 
                 month, 
-                "default_retailer", // retailer_name - 可根据需要从customer表获取
-                "default_retailer_id", // retailer_id - 可根据需要从customer表获取
+                retailerName,
+                retailerId,
                 "项目统计信息", // task固定值
                 subTask, // 统计项名称
                 resultValue, // 统计结果值

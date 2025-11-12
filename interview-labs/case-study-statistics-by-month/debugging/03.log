@@ -1,0 +1,56 @@
+2025-11-12T17:48:39.250+08:00 ERROR 8184 --- [case-study-statistics-by-month] [onPool-worker-1] c.s.c.service.StatisticsTaskService      : 统计任务执行失败
+
+org.springframework.jdbc.BadSqlGrammarException: 
+### Error querying database.  Cause: java.sql.SQLSyntaxErrorException: Unknown column 'retailer_id' in 'field list'
+### The error may exist in file [C:\Users\mrsim\IdeaProjects\backend-basics\interview-labs\case-study-statistics-by-month\target\classes\mapper\StatisticsMapper.xml]
+### The error may involve defaultParameterMap
+### The error occurred while setting parameters
+### SQL: WITH         all_months_and_retailers AS (             SELECT DISTINCT DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm, retailer_id FROM bip_customer WHERE retailer_id IS NOT NULL             UNION             SELECT DISTINCT DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm, retailer_id FROM bip_project WHERE retailer_id IS NOT NULL             UNION             SELECT DISTINCT DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm, retailer_id FROM bip_binding WHERE retailer_id IS NOT NULL         ),          customer_info AS (             SELECT                 retailer_id,                 MAX(retailer_name) as retailer_name             FROM bip_customer             WHERE retailer_id IS NOT NULL             GROUP BY retailer_id         ),          cte1 AS (             SELECT                 DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm,                 retailer_id,                 COUNT(CASE WHEN customer_type = 'Type0' THEN 1 END) AS new_proactive_customers,                 COUNT(CASE WHEN customer_type = 'Type1' THEN 1 END) AS new_cooperative_customers             FROM                 bip_customer             WHERE                 del_flag = '0' AND retailer_id IS NOT NULL             GROUP BY                 yyyy_mm, retailer_id         ),          cte2 AS (             SELECT                 DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm,                 retailer_id,                 COUNT(id) AS new_unbindings             FROM                 bip_binding             WHERE                 del_flag = '1' AND retailer_id IS NOT NULL             GROUP BY                 yyyy_mm, retailer_id         ),          cte3 AS (             SELECT                 DATE_FORMAT(create_time, '%Y-%m') AS yyyy_mm,                 retailer_id,                 COUNT(id) AS new_total_projects,                 COUNT(CASE WHEN del_flag = '0' THEN 1 END) AS new_active_projects,                 COUNT(CASE WHEN is_bfo = '1' THEN 1 END) AS new_bfo_projects             FROM                 bip_project             WHERE retailer_id IS NOT NULL             GROUP BY                 yyyy_mm, retailer_id         ),          monthly_increments AS (             SELECT                 m.yyyy_mm,                 m.retailer_id,                 COALESCE(c1.new_proactive_customers, 0) AS new_proactive_customers,                 COALESCE(c1.new_cooperative_customers, 0) AS new_cooperative_customers,                 COALESCE(c2.new_unbindings, 0) AS new_unbindings,                 COALESCE(c3.new_total_projects, 0) AS new_total_projects,                 COALESCE(c3.new_active_projects, 0) AS new_active_projects,                 COALESCE(c3.new_bfo_projects, 0) AS new_bfo_projects             FROM all_months_and_retailers m             LEFT JOIN cte1 c1 ON m.yyyy_mm = c1.yyyy_mm AND m.retailer_id = c1.retailer_id             LEFT JOIN cte2 c2 ON m.yyyy_mm = c2.yyyy_mm AND m.retailer_id = c2.retailer_id             LEFT JOIN cte3 c3 ON m.yyyy_mm = c3.yyyy_mm AND m.retailer_id = c3.retailer_id         )          SELECT             i.yyyy_mm,             ci.retailer_name,             i.retailer_id,             SUM(i.new_proactive_customers) OVER (PARTITION BY i.retailer_id ORDER BY i.yyyy_mm) AS proactive_customer_count,             SUM(i.new_cooperative_customers) OVER (PARTITION BY i.retailer_id ORDER BY i.yyyy_mm) AS cooperative_customer_count,             SUM(i.new_unbindings) OVER (PARTITION BY i.retailer_id ORDER BY i.yyyy_mm) AS unbinding_count,             SUM(i.new_total_projects) OVER (PARTITION BY i.retailer_id ORDER BY i.yyyy_mm) AS total_project_count,             SUM(i.new_active_projects) OVER (PARTITION BY i.retailer_id ORDER BY i.yyyy_mm) AS active_project_count,             SUM(i.new_bfo_projects) OVER (PARTITION BY i.retailer_id ORDER BY i.yyyy_mm) AS bfo_project_count         FROM             monthly_increments i         LEFT JOIN customer_info ci ON i.retailer_id = ci.retailer_id         ORDER BY             ci.retailer_name, i.retailer_id, i.yyyy_mm
+### Cause: java.sql.SQLSyntaxErrorException: Unknown column 'retailer_id' in 'field list'
+; bad SQL grammar []
+	at org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator.doTranslate(SQLErrorCodeSQLExceptionTranslator.java:246) ~[spring-jdbc-6.2.11.jar:6.2.11]
+	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107) ~[spring-jdbc-6.2.11.jar:6.2.11]
+	at org.mybatis.spring.MyBatisExceptionTranslator.translateExceptionIfPossible(MyBatisExceptionTranslator.java:92) ~[mybatis-spring-3.0.3.jar:3.0.3]
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:439) ~[mybatis-spring-3.0.3.jar:3.0.3]
+	at jdk.proxy2/jdk.proxy2.$Proxy84.selectList(Unknown Source) ~[na:na]
+	at org.mybatis.spring.SqlSessionTemplate.selectList(SqlSessionTemplate.java:224) ~[mybatis-spring-3.0.3.jar:3.0.3]
+	at org.apache.ibatis.binding.MapperMethod.executeForMany(MapperMethod.java:147) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.binding.MapperMethod.execute(MapperMethod.java:80) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke(MapperProxy.java:141) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.binding.MapperProxy.invoke(MapperProxy.java:86) ~[mybatis-3.5.14.jar:3.5.14]
+	at jdk.proxy2/jdk.proxy2.$Proxy85.selectMonthlyStatistics(Unknown Source) ~[na:na]
+	at com.simon.case_study_statistics_by_month.service.StatisticsTaskService.lambda$executeStatisticsTask$0(StatisticsTaskService.java:46) ~[classes/:na]
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1804) ~[na:na]
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.exec(CompletableFuture.java:1796) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188) ~[na:na]
+Caused by: java.sql.SQLSyntaxErrorException: Unknown column 'retailer_id' in 'field list'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:121) ~[mysql-connector-j-8.0.33.jar:8.0.33]
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:122) ~[mysql-connector-j-8.0.33.jar:8.0.33]
+	at com.mysql.cj.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:916) ~[mysql-connector-j-8.0.33.jar:8.0.33]
+	at com.mysql.cj.jdbc.ClientPreparedStatement.execute(ClientPreparedStatement.java:354) ~[mysql-connector-j-8.0.33.jar:8.0.33]
+	at com.zaxxer.hikari.pool.ProxyPreparedStatement.execute(ProxyPreparedStatement.java:44) ~[HikariCP-6.3.3.jar:na]
+	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute(HikariProxyPreparedStatement.java) ~[HikariCP-6.3.3.jar:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.apache.ibatis.logging.jdbc.PreparedStatementLogger.invoke(PreparedStatementLogger.java:58) ~[mybatis-3.5.14.jar:3.5.14]
+	at jdk.proxy3/jdk.proxy3.$Proxy95.execute(Unknown Source) ~[na:na]
+	at org.apache.ibatis.executor.statement.PreparedStatementHandler.query(PreparedStatementHandler.java:65) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.executor.statement.RoutingStatementHandler.query(RoutingStatementHandler.java:80) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.executor.SimpleExecutor.doQuery(SimpleExecutor.java:65) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.executor.BaseExecutor.queryFromDatabase(BaseExecutor.java:336) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.executor.BaseExecutor.query(BaseExecutor.java:158) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.executor.CachingExecutor.query(CachingExecutor.java:110) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.executor.CachingExecutor.query(CachingExecutor.java:90) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:154) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:147) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(DefaultSqlSession.java:142) ~[mybatis-3.5.14.jar:3.5.14]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:425) ~[mybatis-spring-3.0.3.jar:3.0.3]
+	... 15 common frames omitted
+
+2025-11-12T17:48:39.255+08:00  INFO 8184 --- [case-study-statistics-by-month] [onPool-worker-1] c.s.c.controller.StatisticsController    : 手动统计任务执行完成
