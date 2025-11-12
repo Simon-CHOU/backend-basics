@@ -1,0 +1,6 @@
+修复后重新执行，我能在统计表 bip_dashboard_statistics 中看到retailer_id retailer_name 不同的统计结果了。
+
+现在进入​验证(verifying) 阶段。
+1、请将  Customer.customerType Project.projectType 提取为 Enum ，并替换 gen() 模拟数据生成和 定时统计任务中的有关两个常量的硬编码
+2、基于项目现状，告诉我如何verify 这个统计结果的正确性。
+3、不能做的事情testing:不要设计爆炸多的测试用例，对统计结果表进行end-to-end的结果验证。veify不是testing，开发必须要保证代码是正确的，再交给QA验证。
