@@ -1,0 +1,13 @@
+ 我用gen 生成的数据的customer, project 测试数据都是各不相同的。
+但是我通过 触发 triggerStatistics 写入表的结果，全部都是 default_retailer default_retailer_id，如附图
+请找出问题并修复
+
+e.g.
+
+id                                  |year|month|area_id|area_name|retailer_name   |retailer_id        |task  |sub_task      |result|unit|remark|del_flag|created_by|create_time        |update_by|update_time        |
+------------------------------------+----+-----+-------+---------+----------------+-------------------+------+--------------+------+----+------+--------+----------+-------------------+---------+-------------------+
+59de8e39-bf04-11f0-bc00-e22bc342f4c7|2024|11   |       |         |default_retailer|default_retailer_id|项目统计信息|主动型客户数量       |15    |个   |月度累计统计|0       |system    |2025-11-11 13:43:05|system   |2025-11-11 13:43:05|
+59e16a71-bf04-11f0-bc00-e22bc342f4c7|2024|11   |       |         |default_retailer|default_retailer_id|项目统计信息|配合行客户数量       |10    |个   |月度累计统计|0       |system    |2025-11-11 13:43:05|system   |2025-11-11 13:43:05|
+59e30f27-bf04-11f0-bc00-e22bc342f4c7|2024|11   |       |         |default_retailer|default_retailer_id|项目统计信息|解绑数量          |15    |个   |月度累计统计|0       |system    |2025-11-11 13:43:05|system   |2025-11-11 13:43:05|
+59e444d8-bf04-11f0-bc00-e22bc342f4c7|2024|11   |       |         |default_retailer|default_retailer_id|项目统计信息|项目信息累计数量      |15    |个   |月度累计统计|0       |system    |2025-11-11 13:43:05|system   |2025-11-11 13:43:05|
+59e5dc4f-bf04-11f0-bc00-e22bc342f4c7|2024|11   |       |         |default_retailer|default_retailer_id|项目统计信息|有效项目累计数量      |15    |个   |月度累计统计|0       |system    |2025-11-11 13:43:05|system   |2025-11-11 13:43:05|
