@@ -99,3 +99,23 @@ Test --> Service : 验证累计结果正确
 - 在不重写统计 SQL 的条件下，仍可通过“契约 + 回退累计 + 方言分支”的单元化测试覆盖大部分核心 correctness 风险；这符合 TDD 的“最小可测试单元”思想。
 - 保留 E2E 只验证“SQL 方言与真实库行为”这类单元测试无法覆盖的部分，将验证成本压到最低，同时提高回归效率与定位清晰度。
 - 后续若允许小幅重构，可将“累计逻辑”提取为纯函数（入参为当月新增列表），则单元测试的可维护性与表达力会更强，但当前方案已足够实用与经济。
+
+---
+
+## 术语与标准引用（“方言 / 方言分支”）
+
+- 概念定义：
+  - SQL 方言（SQL Dialect）：不同数据库厂商在 SQL 语法、函数、关键字、行为上的差异集合。例如 MySQL 的 `DATE_FORMAT` 函数与 H2 的兼容模式、关键字解析差异。
+  - 方言分支：代码中根据所连接数据库的方言差异而选择不同实现路径的条件分支。例如本项目中 H2 下使用引号列名与 `JdbcTemplate` 写入，MySQL 下使用 Mapper 原生 SQL。
+
+- 本项目中的“方言分支”出处（代码锚点）：
+  - H2 检测与分支选择：`src/main/java/com/simon/case_study_statistics_by_month/service/StatisticsTaskService.java:198-208`
+  - H2 写入（引号列名 `"year"/"month"`，避免保留字冲突）：`src/main/java/com/simon/case_study_statistics_by_month/service/StatisticsTaskService.java:158-175`
+  - MySQL 写入（Mapper 原生 SQL）：`src/main/resources/mapper/StatisticsMapper.xml:117-126`
+  - 统计查询使用 MySQL 方言能力（窗口函数与 `DATE_FORMAT`）：`src/main/resources/mapper/StatisticsMapper.xml:20-115`
+
+- 标准引用：
+  - [1] MySQL, “Date and Time Functions,” MySQL 8.0 Reference Manual, Oracle. 可用函数 `DATE_FORMAT`. 链接: `https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html`. 访问日期: 2025-11-13。
+  - [2] H2 Database, “Compatibility Modes,” H2 Features. MySQL 兼容模式说明。链接: `https://h2database.com/html/features.html#compatibility`. 访问日期: 2025-11-13。
+  - [3] H2 Database, “Identifiers and Quoted Identifiers,” H2 Grammar. 双引号标识符与大小写/关键字行为。链接: `https://h2database.com/html/grammar.html#identifiers`. 访问日期: 2025-11-13。
+  - [4] H2 Database, “Keywords,” H2 Grammar. 保留关键字（包含 `YEAR`、`MONTH` 等）。链接: `https://h2database.com/html/grammar.html#keywords`. 访问日期: 2025-11-13。
