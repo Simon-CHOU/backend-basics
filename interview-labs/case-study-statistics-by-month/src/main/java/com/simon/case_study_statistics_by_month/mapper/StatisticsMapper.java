@@ -2,6 +2,7 @@ package com.simon.case_study_statistics_by_month.mapper;
 
 import com.simon.case_study_statistics_by_month.domain.StatisticsResult;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -15,7 +16,9 @@ public interface StatisticsMapper {
      * 执行统计查询，获取月度累计统计数据
      * @return 统计结果列表
      */
-    List<StatisticsResult> selectMonthlyStatistics();
+    List<StatisticsResult> selectMonthlyStatistics(@Param("proactiveType") String proactiveType,
+                                                   @Param("cooperativeType") String cooperativeType,
+                                                   @Param("bfoProjectType") String bfoProjectType);
 
     /**
      * 插入统计结果到看板统计表

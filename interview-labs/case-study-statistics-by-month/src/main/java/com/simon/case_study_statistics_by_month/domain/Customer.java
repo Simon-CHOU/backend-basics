@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
+import com.simon.case_study_statistics_by_month.domain.enums.CustomerType;
 
 @Data
 @Accessors(chain = true)
@@ -11,7 +12,7 @@ public class Customer {
     private String id;
     private String customerName;
     private String customerCode;
-    private String customerType;
+    private CustomerType customerType;
     private String delFlag;
     private String createdBy;
     private LocalDateTime createTime;

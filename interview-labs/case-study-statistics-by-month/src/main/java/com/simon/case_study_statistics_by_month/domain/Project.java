@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
+import com.simon.case_study_statistics_by_month.domain.enums.ProjectType;
 
 @Data
 @Accessors(chain = true)
@@ -11,7 +12,7 @@ public class Project {
     private String id;
     private String projectName;
     private String projectCode;
-    private String projectType;
+    private ProjectType projectType;
     private String delFlag;
     private String createdBy;
     private LocalDateTime createTime;

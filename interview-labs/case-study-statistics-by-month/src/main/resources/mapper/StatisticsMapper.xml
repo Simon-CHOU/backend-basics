@@ -44,8 +44,8 @@
             SELECT
                 DATE_FORMAT(c.create_time, '%Y-%m') AS yyyy_mm,
                 c.id AS retailer_id,
-                COUNT(CASE WHEN c.customer_type = 'Type0' THEN 1 END) AS new_proactive_customers,
-                COUNT(CASE WHEN c.customer_type = 'Type1' THEN 1 END) AS new_cooperative_customers
+                COUNT(CASE WHEN c.customer_type = #{proactiveType} THEN 1 END) AS new_proactive_customers,
+                COUNT(CASE WHEN c.customer_type = #{cooperativeType} THEN 1 END) AS new_cooperative_customers
             FROM
                 bip_customer c
             WHERE
@@ -73,7 +73,7 @@
                 b.customer_id AS retailer_id,
                 COUNT(p.id) AS new_total_projects,
                 COUNT(CASE WHEN p.del_flag = '0' THEN 1 END) AS new_active_projects,
-                0 AS new_bfo_projects
+                COUNT(CASE WHEN p.project_type = #{bfoProjectType} THEN 1 END) AS new_bfo_projects
             FROM
                 bip_project p
             JOIN bip_binding b ON b.project_id = p.id
