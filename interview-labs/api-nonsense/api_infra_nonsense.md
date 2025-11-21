@@ -862,3 +862,208 @@ SOP：
 - 为什么要日志脱敏？因为日志会广泛分发与保留，泄露面大。
 - 为什么选 AES-GCM？因为同时提供保密与完整性认证。
 - 为什么要密钥轮换？因为密钥泄露与老化不可避免，动态轮换降低风险。
+
+## 19. 系统间调用安全（Token/AppKey/AK/SK/签名）与部署差异
+
+### 19.1 概念与边界
+
+- AppKey/AK：调用方的公开标识，用于定位和配额，不是密钥。
+- Secret/SK：调用方的私密密钥，用于签名，不应在请求中明文出现。
+- 签名 Sign：对规范化请求进行 HMAC/RSA 计算产生的校验值，用于请求的完整性与来源证明。
+- Token：颁发的访问令牌（如 OAuth2 Client Credentials 令牌或 JWT），适合短期访问控制与撤销管理。
+- mTLS：双向 TLS，证明对端证书身份，适合集群内服务到服务的信任建立。
+- Nonce/Timestamp：随机数与时间戳，用于防重放与时间窗校验。
+- Canonical Request：规范化的待签名字符串，确保跨语言与多网关一致。
+
+边界与负向排除：
+- 签名 ≠ 加密：签名保证完整性与身份，不提供保密；如需保密使用加密或TLS。
+- AppKey ≠ Token：AppKey是静态标识，Token是动态授权结果；Token可撤销与过期。
+- mTLS ≠ 授权：mTLS解决“是谁”，但不等价于细粒度权限；仍需授权层。
+
+反事实：
+- 若无时间窗与重放防护，签名可被复制重放→必须引入 Timestamp+Nonce+存储校验。
+- 若仅使用 Token 而不签名，网关或中间人可篡改载荷→签名保障载荷不可篡改。
+
+### 19.2 策略组合与推荐选择
+
+- 外部第三方调用：AK/SK + HMAC-SHA256 签名 + Timestamp/Nonce + IP 白名单 + 限流；可叠加短期 Token。
+- 内部微服务调用：mTLS + 服务身份（SPIFFE/ServiceAccount）+ 细粒度授权；可在边界层再做签名或 Token。
+- 高安全场景：mTLS + 签名 + Token 三件套；对载荷做应用层加密。
+
+### 19.3 数据模型与密钥管理
+
+- `apps(id, app_key, secret_enc, status, ip_whitelist, kv)`
+- `app_permissions(app_id, perm_code)`
+- `secret_enc` 使用密钥管理系统包裹存储，应用层解封装于内存，不落磁盘。
+- 轮换：新密钥写入并设置生效时间，双签名过渡期同时接受新旧密钥。
+
+### 19.4 签名规范（建议）
+
+- 参与元素：`method`、`path`、`canonical_query`、`sha256(body)`、`timestamp`、`nonce`。
+- 头部：`X-App-Key`、`X-Timestamp`(ms)、`X-Nonce`、`X-Sign-Alg`(`HMAC-SHA256`)、`X-Signature`(Base64)。
+- 时间窗：默认 300000ms；服务器与客户端需时间同步。
+- 重放防护：`X-Nonce` 在时间窗内唯一，存储于 Redis，使用 `SETNX` + TTL。
+
+### 19.5 Spring Boot 2.x 验签过滤器（Java 21）
+
+```
+@Component
+public class SystemSignatureAuthFilter extends OncePerRequestFilter {
+  private final StringRedisTemplate redis;
+  private final AppCredentialService appService;
+  public SystemSignatureAuthFilter(StringRedisTemplate r, AppCredentialService s) { this.redis = r; this.appService = s; }
+  @Override
+  protected void doFilterInternal(HttpServletRequest req, HttpServletResponse resp, FilterChain chain) throws ServletException, IOException {
+    String appKey = req.getHeader("X-App-Key");
+    String ts = req.getHeader("X-Timestamp");
+    String nonce = req.getHeader("X-Nonce");
+    String alg = req.getHeader("X-Sign-Alg");
+    String sig = req.getHeader("X-Signature");
+    if (appKey != null && ts != null && nonce != null && alg != null && sig != null) {
+      long now = System.currentTimeMillis();
+      long t = Long.parseLong(ts);
+      if (Math.abs(now - t) > 300000) { resp.setStatus(401); return; }
+      Boolean ok = redis.opsForValue().setIfAbsent("sig:nc:"+appKey+":"+nonce, "1", Duration.ofMinutes(6));
+      if (Boolean.FALSE.equals(ok)) { resp.setStatus(401); return; }
+      AppCredential cred = appService.findByKey(appKey);
+      if (cred == null || !"ACTIVE".equals(cred.status())) { resp.setStatus(401); return; }
+      CachedBodyHttpServletRequest wrapper = new CachedBodyHttpServletRequest(req);
+      String method = wrapper.getMethod();
+      String path = wrapper.getRequestURI();
+      String q = canonicalQuery(wrapper);
+      String bodyHash = sha256Base64(wrapper.getInputStream().readAllBytes());
+      String canonical = method+"\n"+path+"\n"+q+"\n"+bodyHash+"\n"+ts+"\n"+nonce;
+      String calc = hmacBase64(cred.secret(), canonical);
+      if (!safeEquals(calc, sig)) { resp.setStatus(401); return; }
+      User ud = new User(appKey, "N/A", List.of(new SimpleGrantedAuthority("APP_CALLER")));
+      UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(ud, null, ud.getAuthorities());
+      SecurityContextHolder.getContext().setAuthentication(auth);
+      chain.doFilter(wrapper, resp);
+      return;
+    }
+    chain.doFilter(req, resp);
+  }
+  private static String canonicalQuery(HttpServletRequest req) {
+    Map<String,String[]> pm = req.getParameterMap();
+    List<String> parts = new ArrayList<>();
+    pm.keySet().stream().sorted().forEach(k -> {
+      String[] vs = pm.get(k);
+      Arrays.sort(vs);
+      for (String v: vs) parts.add(URLEncoder.encode(k, StandardCharsets.UTF_8)+"="+URLEncoder.encode(v, StandardCharsets.UTF_8));
+    });
+    return String.join("&", parts);
+  }
+  private static String sha256Base64(byte[] b) {
+    try {
+      MessageDigest md = MessageDigest.getInstance("SHA-256");
+      return Base64.getEncoder().encodeToString(md.digest(b));
+    } catch (Exception e) { throw new RuntimeException(e); }
+  }
+  private static String hmacBase64(String sk, String s) {
+    try {
+      Mac mac = Mac.getInstance("HmacSHA256");
+      mac.init(new SecretKeySpec(sk.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+      return Base64.getEncoder().encodeToString(mac.doFinal(s.getBytes(StandardCharsets.UTF_8)));
+    } catch (Exception e) { throw new RuntimeException(e); }
+  }
+  private static boolean safeEquals(String a, String b) {
+    if (a == null || b == null) return false;
+    byte[] x = a.getBytes(StandardCharsets.UTF_8);
+    byte[] y = b.getBytes(StandardCharsets.UTF_8);
+    if (x.length != y.length) return false;
+    int r = 0; for (int i=0;i<x.length;i++) r |= x[i]^y[i];
+    return r==0;
+  }
+}
+```
+
+```
+public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
+  private final byte[] body;
+  public CachedBodyHttpServletRequest(HttpServletRequest request) throws IOException {
+    super(request);
+    this.body = request.getInputStream().readAllBytes();
+  }
+  @Override
+  public ServletInputStream getInputStream() {
+    ByteArrayInputStream bais = new ByteArrayInputStream(body);
+    return new ServletInputStream() {
+      @Override public int read() { return bais.read(); }
+      @Override public boolean isFinished() { return bais.available()==0; }
+      @Override public boolean isReady() { return true; }
+      @Override public void setReadListener(ReadListener readListener) {}
+    };
+  }
+}
+```
+
+```
+@Service
+public class AppCredentialService {
+  private final JdbcTemplate jdbc;
+  public AppCredentialService(JdbcTemplate jdbc) { this.jdbc = jdbc; }
+  public AppCredential findByKey(String appKey) {
+    try {
+      Map<String,Object> m = jdbc.queryForMap("select app_key, secret, status from apps where app_key=?", appKey);
+      return new AppCredential((String)m.get("app_key"), (String)m.get("secret"), (String)m.get("status"));
+    } catch (Exception e) { return null; }
+  }
+}
+record AppCredential(String appKey, String secret, String status) {}
+```
+
+将过滤器在 `SecurityFilterChain` 中注册至认证链靠前位置。
+
+### 19.6 客户端签名示例（Java 21）
+
+```
+public final class SignClient {
+  public static String sign(String sk, String method, String path, Map<String,String> query, byte[] body, String ts, String nonce) {
+    String q = query.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(e -> e.getKey()+"="+e.getValue()).collect(Collectors.joining("&"));
+    String bh = sha256Base64(body);
+    String canonical = method+"\n"+path+"\n"+q+"\n"+bh+"\n"+ts+"\n"+nonce;
+    return hmacBase64(sk, canonical);
+  }
+  static String sha256Base64(byte[] b) { try { MessageDigest md = MessageDigest.getInstance("SHA-256"); return Base64.getEncoder().encodeToString(md.digest(b)); } catch (Exception e) { throw new RuntimeException(e);} }
+  static String hmacBase64(String sk, String s) { try { Mac mac = Mac.getInstance("HmacSHA256"); mac.init(new SecretKeySpec(sk.getBytes(StandardCharsets.UTF_8), "HmacSHA256")); return Base64.getEncoder().encodeToString(mac.doFinal(s.getBytes(StandardCharsets.UTF_8))); } catch (Exception e) { throw new RuntimeException(e);} }
+}
+```
+
+### 19.7 传统部署 vs K8S 部署差异
+
+- 传统部署：
+  - 使用防火墙与反向代理的 IP 白名单。
+  - 密钥通过操作系统密钥环或文件分发，轮换需人工或脚本。
+  - 负载均衡与证书管理集中在 Nginx/Apache。
+- K8S 部署：
+  - 使用 `Secret` 注入 AK/SK，RBAC 控制访问，滚动更新轮换。
+  - `NetworkPolicy` 控制 Pod 间流量；Service Mesh 提供 mTLS 与零信任。
+  - 外部入口通过 Ingress/Gateway，策略在 CRD 与 Sidecar 层下发。
+  - 与外部 KMS 集成通过 ExternalSecrets，同步密钥版本。
+
+### 19.8 OpenAPI/ESB 企业总线 vs 云原生微服务
+
+- ESB/企业总线：
+  - 中心化编排、转换、策略与审计，统一入口进行鉴权与签名校验。
+  - 适合多协议整合与长流程编排；治理重，变更周期长。
+  - 密钥管理与访问控制在总线层集中，实现跨系统统一策略。
+- 云原生微服务：
+  - API Gateway + Service Mesh 分层治理，轻量策略、快速迭代。
+  - 每服务明确边界，签名与授权可在网关或应用层实现。
+  - 强调自动化与声明式配置（Ingress、AuthorizationPolicy、OPA）。
+
+### 19.9 SOP（端到端）
+
+- 创建调用方：插入 `apps(app_key, secret, status)` 并下发 AK/SK。
+- 客户端构造请求：计算签名，设置 `X-App-Key/X-Timestamp/X-Nonce/X-Sign-Alg/X-Signature`。
+- 服务端：启用 `SystemSignatureAuthFilter`，配置 Redis 防重放与密钥服务。
+- 部署：在 K8S 通过 `Secret` 注入 SK 并滚动更新；在传统环境通过密钥文件+重启轮换。
+- 验证：构造过期时间戳与重复 Nonce，确认被拒；构造正确签名，返回 200。
+
+### 19.10 5-Why 与边界
+
+- 为什么要 AK/SK+签名？因为第三方请求需证明来源与完整性，且无需状态持有。
+- 为什么要 Token？因为授权需可撤销与短期有效，便于审计与隔离。
+- 为什么要 mTLS？因为机器身份在传输层建立信任，抵抗中间人。
+- 为什么要时间窗与 Nonce？因为需抵抗重放与离线攻击。
+- 为什么要规范化字符串？因为跨语言与多节点需一致性，否则签名不稳定。
