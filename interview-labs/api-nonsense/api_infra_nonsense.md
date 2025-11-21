@@ -633,3 +633,232 @@ var httpClient = HttpClient.newBuilder()
 - Sonar ≠ 渗透测试：它是静态分析，仍需配合 SAST/DAST 与红队演练。
 - 零告警 ≠ 零风险：需持续监控与代码评审、依赖安全更新。
 - 忽略/抑制问题 ≠ 修复：除非有严谨的风险评估与豁免流程，不允许使用忽略标签。
+
+## 18. Crypto 三处落地实践（HTTP载荷、落库加密、日志脱敏）
+
+### 18.1 先总后分与边界
+
+- HTTP 请求体加解密：在 TLS 之外做应用层保密与认证，适用于端到端保密或网关终止 TLS 的场景。
+- 落库前加密：字段级加密与密钥轮换，保证静态数据泄露时不可读。
+- 日志加密与脱敏：对凭证与隐私数据进行掩码或加密，满足合规与最小暴露。
+
+边界与负向排除：
+- TLS ≠ 应用层加密：TLS保护链路，但终止点之后明文仍可被读取；应用层加密可实现真正端到端。
+- 加密 ≠ 哈希：哈希不可逆，适合密码；加密可逆，适合业务数据保密。
+- 脱敏 ≠ 删除：脱敏是可控显示，不等价于彻底不记录；敏感数据应尽量不进入日志。
+
+反事实：
+- 若仅依赖 TLS 而网关终止后进入明文，内部侧被入侵即可读敏感数据→需应用层加密。
+- 未做字段加密，数据库被拖库即明文外泄→需 AES-GCM 等。
+- 日志未脱敏，审计或故障排查即泄露隐私→需掩码或加密。
+
+### 18.2 HTTP 请求体加解密（混合加密：RSA/ECDH + AES-GCM）
+
+握手与数据流：
+```
+Client -> /crypto/key -> {kid, alg, pubKey}
+Client --encrypt JSON with AES-GCM, wrap AES by RSA/ECDH--> POST /api
+Server --unwrap key--> decrypt body --> Controller
+```
+
+设计要点：
+- 暴露公钥获取端点，包含 `kid` 与失效时间，支持密钥轮换。
+- 客户端用公钥包裹一次性 AES-GCM 密钥，负载使用 AES-GCM 加密（含认证标签）。
+- 服务端过滤器在控制器前解密，恢复原始 JSON。
+
+示例代码（Java 21）：
+```
+@RestController
+@RequestMapping("/crypto")
+public class CryptoController {
+  private final CryptoKeyService cryptoKeyService;
+  public CryptoController(CryptoKeyService s) { this.cryptoKeyService = s; }
+  @GetMapping("/key")
+  public Map<String,Object> key() {
+    return cryptoKeyService.currentPublicKey();
+  }
+}
+```
+
+```
+@Service
+public class CryptoKeyService {
+  private final KeyPair keyPair;
+  private final String kid;
+  public CryptoKeyService() {
+    try {
+      KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+      kpg.initialize(2048);
+      this.keyPair = kpg.generateKeyPair();
+      this.kid = UUID.randomUUID().toString();
+    } catch (Exception e) { throw new RuntimeException(e); }
+  }
+  public Map<String,Object> currentPublicKey() {
+    String pub = Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded());
+    return Map.of("kid", kid, "alg", "RSA-OAEP", "pubKey", pub, "expiresAt", Instant.now().plus(Duration.ofHours(12)).toString());
+  }
+  public PrivateKey privateKey() { return keyPair.getPrivate(); }
+}
+```
+
+```
+@Component
+public class EncryptedJsonFilter extends OncePerRequestFilter {
+  private final CryptoKeyService keyService;
+  public EncryptedJsonFilter(CryptoKeyService ks) { this.keyService = ks; }
+  @Override
+  protected void doFilterInternal(HttpServletRequest req, HttpServletResponse resp, FilterChain chain) throws ServletException, IOException {
+    if ("1".equals(req.getHeader("X-Encrypted")) && "application/json".equalsIgnoreCase(req.getContentType())) {
+      String body = new String(req.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+      Map<String,Object> env = new ObjectMapper().readValue(body, new TypeReference<Map<String,Object>>(){});
+      byte[] ek = Base64.getDecoder().decode((String) env.get("ek"));
+      byte[] iv = Base64.getDecoder().decode((String) env.get("iv"));
+      byte[] ct = Base64.getDecoder().decode((String) env.get("ct"));
+      try {
+        Cipher unwrap = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+        unwrap.init(Cipher.UNWRAP_MODE, keyService.privateKey());
+        Key aesKey = unwrap.unwrap(ek, "AES", Cipher.SECRET_KEY);
+        Cipher aes = Cipher.getInstance("AES/GCM/NoPadding");
+        GCMParameterSpec spec = new GCMParameterSpec(128, iv);
+        aes.init(Cipher.DECRYPT_MODE, aesKey, spec);
+        byte[] plain = aes.doFinal(ct);
+        HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(req) {
+          @Override
+          public ServletInputStream getInputStream() {
+            ByteArrayInputStream bais = new ByteArrayInputStream(plain);
+            return new ServletInputStream() {
+              @Override public boolean isFinished() { return bais.available()==0; }
+              @Override public boolean isReady() { return true; }
+              @Override public void setReadListener(ReadListener readListener) {}
+              @Override public int read() { return bais.read(); }
+            };
+          }
+          @Override public String getHeader(String name) { return "Content-Type".equalsIgnoreCase(name)?"application/json":super.getHeader(name); }
+          @Override public String getContentType() { return "application/json"; }
+        };
+        chain.doFilter(wrapper, resp);
+        return;
+      } catch (Exception e) { resp.setStatus(400); return; }
+    }
+    chain.doFilter(req, resp);
+  }
+}
+```
+
+SOP：
+- 暴露 `/crypto/key`，前端请求前获取公钥与 `kid`。
+- 前端用混合加密构造包，设置 `X-Encrypted: 1` 与 `Content-Type: application/json`。
+- 在安全链路中把 `EncryptedJsonFilter` 放在控制器前。
+
+### 18.3 业务落库前加密（AES-GCM + JPA Converter + 轮换）
+
+设计要点：
+- 字段级透明加密，支持密钥版本 `kv` 与轮换策略。
+- 存储格式包括 `kv:iv:ciphertext`，Base64 编码。
+- 查询能力：避免在密文上做模糊搜索；等值查询用哈希索引替代。
+
+示例代码：
+```
+@Converter
+public class AesGcmStringConverter implements AttributeConverter<String, String> {
+  @Override
+  public String convertToDatabaseColumn(String attribute) {
+    if (attribute == null) return null;
+    try {
+      String kv = KeyVault.currentVersion();
+      SecretKey key = KeyVault.currentKey();
+      byte[] iv = SecureRandom.getInstanceStrong().generateSeed(12);
+      Cipher c = Cipher.getInstance("AES/GCM/NoPadding");
+      c.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(128, iv));
+      byte[] ct = c.doFinal(attribute.getBytes(StandardCharsets.UTF_8));
+      return kv+":"+Base64.getEncoder().encodeToString(iv)+":"+Base64.getEncoder().encodeToString(ct);
+    } catch (Exception e) { throw new RuntimeException(e); }
+  }
+  @Override
+  public String convertToEntityAttribute(String dbData) {
+    if (dbData == null) return null;
+    try {
+      String[] parts = dbData.split(":");
+      String kv = parts[0];
+      SecretKey key = KeyVault.keyByVersion(kv);
+      byte[] iv = Base64.getDecoder().decode(parts[1]);
+      byte[] ct = Base64.getDecoder().decode(parts[2]);
+      Cipher c = Cipher.getInstance("AES/GCM/NoPadding");
+      c.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(128, iv));
+      byte[] pt = c.doFinal(ct);
+      return new String(pt, StandardCharsets.UTF_8);
+    } catch (Exception e) { throw new RuntimeException(e); }
+  }
+}
+```
+
+```
+public final class KeyVault {
+  private static final Map<String, SecretKey> KEYS = new ConcurrentHashMap<>();
+  private static volatile String CURRENT = "v1";
+  static {
+    KEYS.put("v1", new SecretKeySpec(Base64.getDecoder().decode(System.getenv("DATA_KEY_V1")), "AES"));
+  }
+  public static String currentVersion() { return CURRENT; }
+  public static SecretKey currentKey() { return KEYS.get(CURRENT); }
+  public static SecretKey keyByVersion(String v) { return KEYS.get(v); }
+}
+```
+
+SOP：
+- 通过环境变量注入数据密钥，避免入库。
+- 为包含隐私的字段添加 `@Convert(converter = AesGcmStringConverter.class)`。
+- 轮换策略：新密钥设为 `CURRENT`，增量读旧密文写回新密文。
+
+### 18.4 日志中的加密与脱敏（Masking + 最小化）
+
+设计要点：
+- 日志最小化原则：不记录凭证与隐私；必须记录时做掩码或加密。
+- 统一入口：所有用户输入进入日志前通过掩码器处理。
+- 正则掩码：处理常见字段如 `password`、`token`、`authorization`、身份证号与手机号。
+
+示例代码：
+```
+public final class Masking {
+  private static final Pattern PWD = Pattern.compile("\"password\"\s*:\s*\".*?\"", Pattern.CASE_INSENSITIVE);
+  private static final Pattern TOKEN = Pattern.compile("\"token\"\s*:\s*\"[A-Za-z0-9._-]+\"", Pattern.CASE_INSENSITIVE);
+  private static final Pattern AUTHZ = Pattern.compile("authorization:\s*bearer\s+[A-Za-z0-9._-]+", Pattern.CASE_INSENSITIVE);
+  private static final Pattern ID = Pattern.compile("\b\d{15,18}\b");
+  private static final Pattern PHONE = Pattern.compile("\b1\d{10}\b");
+  public static String format(String s) {
+    if (s == null) return null;
+    String r = PWD.matcher(s).replaceAll("\"password\":\"***\"");
+    r = TOKEN.matcher(r).replaceAll("\"token\":\"***\"");
+    r = AUTHZ.matcher(r).replaceAll("authorization: bearer ***");
+    r = ID.matcher(r).replaceAll("***");
+    r = PHONE.matcher(r).replaceAll("***");
+    return r;
+  }
+}
+```
+
+```
+@RestController
+public class SampleController {
+  private static final Logger log = LoggerFactory.getLogger(SampleController.class);
+  @PostMapping("/sample")
+  public Map<String,Object> sample(@RequestBody Map<String,Object> body) {
+    String raw = new ObjectMapper().valueToTree(body).toString();
+    log.info(Masking.format(raw));
+    return Map.of("ok", true);
+  }
+}
+```
+
+SOP：
+- 在日志切面或拦截器中统一调用 `Masking.format`。
+- 对异常与审计日志进行分类，敏感字段始终掩码。
+- 对需要密文留痕的场景，使用公钥加密后再记录。
+
+### 18.5 5-Why 与第一性原理
+
+- 为什么要应用层加密？因为终止 TLS 后仍需保密与来源认证。
+- 为什么要字段级加密？因为静态数据是被拖库的首要目标。
+- 为什么要日志脱敏？因为日志会广泛分发与保留，泄露面大。
+- 为什么选 AES-GCM？因为同时提供保密与完整性认证。
+- 为什么要密钥轮换？因为密钥泄露与老化不可避免，动态轮换降低风险。
