@@ -1,0 +1,98 @@
+# Maven build outputs
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Build artifacts
+build/
+dist/
+out/
+
+# Dependency management
+**/dependency-reduced-pom.xml
+**/maven-wrapper.properties
+
+# Log files
+**/*.log
+logs/
+
+# IDE files
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Eclipse specific
+.classpath
+.project
+.settings/
+bin/
+
+# VS Code
+.vscode/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# Test and coverage reports
+**/surefire-reports/
+**/failsafe-reports/
+**/test-results/
+**/coverage/
+**/jacoco.exec
+
+# Package files
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# System files
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/
+
+# Documentation
+**/docs/_build/
+
+# Local configuration
+*.orig
+*.bak
+*.backup
+
+# Java specific
+*.class
+*.ctxt
+
+# Maven specific
+**/mvnw
+**/mvnw.cmd
+**/.mvn/
+
+# Exceptions for build outputs in src directories
+!**/src/main/**/target/
+!**/src/test/**/build/
