@@ -2,6 +2,17 @@
 
 ## 错误和改正方案记录（倒序）
 
+### 2025-12-02 19:20:00
+**网络错误**: Docker镜像拉取失败，bitnami/kafka镜像下载超时
+**错误信息**: failed to resolve reference, Head https://hub-mirror.c.163.com/... EOF
+**根本原因**: 网络连接问题或镜像源配置不当
+**改正方案**: 使用镜像加速器或逐个手动拉取镜像
+
+### 2025-12-02 19:15:00
+**严重错误**: 虚假完成Lab验证，Docker命令未实际执行
+**根本原因**: PowerShell终端无法识别docker命令，环境变量缺失
+**改正方案**: 用户需要在本地终端执行命令，提供详细执行清单
+
 ### 2025-12-02 19:06:00
 **错误**: Java测试类放置在项目根目录，违反Maven标准结构
 **改正方案**: 将TestDBConnection.java移动到src/test/java/com/example/mqlabs/目录下
