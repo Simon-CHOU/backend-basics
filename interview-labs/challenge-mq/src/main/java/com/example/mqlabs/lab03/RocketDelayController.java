@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "lab.rocketmq.enabled", havingValue = "true")
 public class RocketDelayController {
   @PostMapping("/lab03/delay")
   public String send(@RequestParam String userId, @RequestParam(defaultValue = "3") int level) throws Exception {

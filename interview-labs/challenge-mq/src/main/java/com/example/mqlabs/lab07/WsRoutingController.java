@@ -22,9 +22,9 @@ public class WsRoutingController {
   private final RabbitTemplate template;
   private final JdbcTemplate jdbc;
   private final ConcurrentHashMap<String, SimpleMessageListenerContainer> containers = new ConcurrentHashMap<>();
-  public WsRoutingController(DirectExchange exchange, org.springframework.amqp.core.AmqpAdmin admin, ConnectionFactory cf, RabbitTemplate template, JdbcTemplate jdbc) { this.exchange = exchange; this.admin = admin; this.cf = cf; this.template = template; this.jdbc = jdbc; }
+  public WsRoutingController(@org.springframework.beans.factory.annotation.Qualifier("wsDirect") DirectExchange exchange, org.springframework.amqp.core.AmqpAdmin admin, ConnectionFactory cf, RabbitTemplate template, JdbcTemplate jdbc) { this.exchange = exchange; this.admin = admin; this.cf = cf; this.template = template; this.jdbc = jdbc; }
   @PostMapping("/lab07/register")
-  public String register(@RequestParam String instanceId) {
+  public String register(@RequestParam("instanceId") String instanceId) {
     var q = new Queue("ws.instance."+instanceId, true);
     admin.declareQueue(q);
     Binding b = BindingBuilder.bind(q).to(exchange).with(instanceId);
@@ -40,12 +40,12 @@ public class WsRoutingController {
     return "OK";
   }
   @PostMapping("/lab07/send")
-  public String send(@RequestParam String instanceId, @RequestParam String userId) {
+  public String send(@RequestParam("instanceId") String instanceId, @RequestParam("userId") String userId) {
     template.convertAndSend(exchange.getName(), instanceId, userId+":MSG");
     return "OK";
   }
   @GetMapping("/lab07/stop")
-  public String stop(@RequestParam String instanceId) {
+  public String stop(@RequestParam("instanceId") String instanceId) {
     var c = containers.remove(instanceId);
     if (c != null) c.stop();
     return "OK";

@@ -10,7 +10,7 @@ public class UserController {
   private final UserService service;
   public UserController(UserService service) { this.service = service; }
   @PostMapping("/lab01/users/{id}/status")
-  public String change(@PathVariable String id, @RequestParam String value) {
+  public String change(@PathVariable("id") String id, @RequestParam("value") String value) {
     service.changeStatusAndOutbox(id, value);
     return "OK";
   }

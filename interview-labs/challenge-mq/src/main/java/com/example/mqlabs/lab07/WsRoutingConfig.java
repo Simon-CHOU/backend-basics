@@ -11,5 +11,5 @@ import org.springframework.context.annotation.Configuration;
 public class WsRoutingConfig {
   @Bean DirectExchange wsDirect() { return new DirectExchange("ws.direct"); }
   @Bean Queue wsDlq() { return new Queue("ws.dlq", true); }
-  @Bean Binding wsDlqBind(Queue wsDlq, DirectExchange wsDirect) { return BindingBuilder.bind(wsDlq).to(wsDirect).with("dlq"); }
+  @Bean Binding wsDlqBind(@org.springframework.beans.factory.annotation.Qualifier("wsDlq") Queue wsDlq, @org.springframework.beans.factory.annotation.Qualifier("wsDirect") DirectExchange wsDirect) { return BindingBuilder.bind(wsDlq).to(wsDirect).with("dlq"); }
 }

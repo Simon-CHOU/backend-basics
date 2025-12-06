@@ -2,6 +2,36 @@
 
 ## 错误和改正方案记录（倒序）
 
+### 2025-12-02 22:20:00
+**运行时错误**: Lab01接口返回500 Internal Server Error
+**错误现象**: curl POST /lab01/users/1/status 返回500，users表无数据
+**可能原因**: 数据库插入异常或事务配置问题
+**后续建议**: 检查应用日志中的完整异常堆栈，确认SQL语句与表结构是否匹配
+
+### 2025-12-02 22:15:00
+**启动错误**: Spring Bean注入歧义 (Queue/Exchange)
+**错误信息**: Parameter 0 of method userBinding required a single bean, but 4 were found
+**根本原因**: 配置类方法参数未指定具体的Bean名称，Spring 6.x不再保留参数名
+**改正方案**: 在RabbitConfig, Lab06RabbitConfig, WsRoutingConfig中使用@Qualifier明确指定Bean名称
+
+### 2025-12-02 22:10:00
+**启动错误**: Spring Bean注入歧义 (DirectExchange)
+**错误信息**: required a single bean, but 2 were found: lab06Exchange, wsDirect
+**根本原因**: WsRoutingController构造函数未指定具体的Bean名称
+**改正方案**: 使用@Qualifier("wsDirect")指定注入Bean
+
+### 2025-12-02 22:05:00
+**启动错误**: Spring Bean未找到 (UserService)
+**错误信息**: Parameter 0 of constructor in UserController required a bean of type 'UserService'
+**根本原因**: UserService类缺少@Service注解
+**改正方案**: 为UserService添加@Service注解
+
+### 2025-12-02 19:25:00
+**网络错误**: RocketMQ镜像下载失败，网络连接不稳定
+**错误信息**: failed to copy: httpReadSeeker: failed open: failed to do request: Get https://hub-mirror.c.163.com/... EOF
+**根本原因**: 网络连接不稳定，镜像加速器可能在某些镜像上工作不正常
+**改正方案**: 尝试使用不同的网络环境或等待网络恢复
+
 ### 2025-12-02 19:20:00
 **网络错误**: Docker镜像拉取失败，bitnami/kafka镜像下载超时
 **错误信息**: failed to resolve reference, Head https://hub-mirror.c.163.com/... EOF

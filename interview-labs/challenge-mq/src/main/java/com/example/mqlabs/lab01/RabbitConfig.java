@@ -11,5 +11,5 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitConfig {
   @Bean TopicExchange appExchange() { return new TopicExchange("app.events"); }
   @Bean Queue userQueue() { return new Queue("user.events", true); }
-  @Bean Binding userBinding(Queue userQueue, TopicExchange appExchange) { return BindingBuilder.bind(userQueue).to(appExchange).with("User.*"); }
+  @Bean Binding userBinding(@org.springframework.beans.factory.annotation.Qualifier("userQueue") Queue userQueue, @org.springframework.beans.factory.annotation.Qualifier("appExchange") TopicExchange appExchange) { return BindingBuilder.bind(userQueue).to(appExchange).with("User.*"); }
 }

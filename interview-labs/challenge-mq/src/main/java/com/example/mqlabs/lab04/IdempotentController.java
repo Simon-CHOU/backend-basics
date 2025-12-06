@@ -10,7 +10,7 @@ public class IdempotentController {
   private final JdbcTemplate jdbc;
   public IdempotentController(JdbcTemplate jdbc) { this.jdbc = jdbc; }
   @PostMapping("/lab04/process")
-  public String process(@RequestParam String messageId, @RequestParam String sku) {
+  public String process(@RequestParam("messageId") String messageId, @RequestParam("sku") String sku) {
     var inserted = jdbc.update("insert into lab04_inbox(message_id,processed_at) values(?,?) on conflict do nothing", messageId, java.time.Instant.now());
     if (inserted == 1) jdbc.update("insert into lab04_counts(sku,count) values(?,1) on conflict (sku) do update set count=lab04_counts.count+1", sku);
     return "OK";

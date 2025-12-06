@@ -13,7 +13,7 @@ public class OrderedController {
   private final KeySerialProcessor processor = new KeySerialProcessor();
   public OrderedController(JdbcTemplate jdbc) { this.jdbc = jdbc; }
   @GetMapping("/lab05/ordered")
-  public String ordered(@RequestParam String keys, @RequestParam(defaultValue = "5") int perKey) throws Exception {
+  public String ordered(@RequestParam("keys") String keys, @RequestParam(name = "perKey", defaultValue = "5") int perKey) throws Exception {
     var list = Arrays.asList(keys.split(","));
     try (var ex = Executors.newVirtualThreadPerTaskExecutor()) {
       for (var k : list) {

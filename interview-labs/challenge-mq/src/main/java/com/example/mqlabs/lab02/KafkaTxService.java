@@ -4,6 +4,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "lab.kafka.enabled", havingValue = "true")
 public class KafkaTxService {
   private final KafkaTemplate<String,String> template;
   public KafkaTxService(KafkaTemplate<String,String> template) { this.template = template; }

@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "lab.kafka.enabled", havingValue = "true")
 public class KafkaConsumer {
   private final JdbcTemplate jdbc;
   public KafkaConsumer(JdbcTemplate jdbc) { this.jdbc = jdbc; }

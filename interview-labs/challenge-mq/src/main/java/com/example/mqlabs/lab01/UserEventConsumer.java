@@ -11,7 +11,7 @@ public class UserEventConsumer {
   @RabbitListener(queues = "user.events")
   public void onMessage(org.springframework.amqp.core.Message message) {
     var id = Long.parseLong(message.getMessageProperties().getMessageId());
-    var inserted = jdbc.update("insert into inbox(message_id,processed_at) values(?,?) on conflict do nothing", id, java.time.Instant.now());
+    var inserted = jdbc.update("insert into inbox(message_id,processed_at) values(?,?) on conflict do nothing", id, java.sql.Timestamp.from(java.time.Instant.now()));
     if (inserted == 1) apply(new String(message.getBody()));
   }
   private void apply(String payload) {
