@@ -41,5 +41,56 @@
   <select id="countUsers" resultType="long">
     select count(*) from users
   </select>
+
+  <!-- Performance test methods -->
+  <insert id="insertUser" parameterType="com.simon.mybatis.domain.User" useGeneratedKeys="true" keyProperty="id">
+    insert into users(email, name) values(#{email}, #{name})
+  </insert>
+
+  <select id="findUserById" parameterType="long" resultMap="UserMap">
+    select id, email, name from users where id = #{id}
+  </select>
+
+  <update id="updateUser" parameterType="com.simon.mybatis.domain.User">
+    update users set email = #{email}, name = #{name} where id = #{id}
+  </update>
+
+  <delete id="deleteAllUsers">
+    delete from users
+  </delete>
+
+  <delete id="deleteUsersByIdRange">
+    delete from users where id between #{startId} and #{endId}
+  </delete>
+
+  <select id="findUsersByNameLike" parameterType="string" resultMap="UserMap">
+    select id, email, name from users where name like concat('%', #{name}, '%')
+  </select>
+
+  <select id="findUsersByEmailLike" parameterType="string" resultMap="UserMap">
+    select id, email, name from users where email like #{email}
+  </select>
+
+  <select id="findUsersByConditions" resultMap="UserMap">
+    select id, email, name from users
+    <where>
+      <if test="name != null and name != ''">
+        name like #{name}
+      </if>
+      <if test="email != null and email != ''">
+        and email like #{email}
+      </if>
+    </where>
+    order by id
+  </select>
+
+  <select id="findAllUsers" resultMap="UserMap">
+    select id, email, name from users order by id
+  </select>
+
+  <select id="findUsersWithPagination" resultMap="UserMap">
+    select id, email, name from users order by id
+    offset #{offset} rows fetch next #{limit} rows only
+  </select>
 </mapper>
 

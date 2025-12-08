@@ -23,5 +23,17 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     @Query(value = "select count(*) from users", nativeQuery = true)
     long countUsersNative();
+
+    // 为SQL日志分析添加的方法
+    List<User> findByNameContaining(String name);
+
+    @Query("SELECT u FROM User u WHERE u.name LIKE :name")
+    List<User> findByNameWithJpql(@Param("name") String name);
+
+    @Query(value = "SELECT count(*) FROM users", nativeQuery = true)
+    long countByNativeQuery();
+
+    @Query("SELECT u.id, u.name FROM User u")
+    List<Object[]> findUserSummaries();
 }
 

@@ -22,6 +22,15 @@ public class Order {
     @Column(nullable = false)
     private int total;
 
+    // 无参构造函数
+    public Order() {}
+
+    // 带参数的构造函数
+    public Order(User user, int total) {
+        this.user = user;
+        this.total = total;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public User getUser() { return user; }

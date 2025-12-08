@@ -30,5 +30,57 @@
     where o.id = #{id}
     order by i.id
   </select>
+
+  <!-- Performance test methods -->
+  <insert id="insertOrderItem" parameterType="com.simon.mybatis.domain.OrderItem" useGeneratedKeys="true" keyProperty="id">
+    insert into order_items(order_id, sku, qty) values(#{orderId}, #{sku}, #{qty})
+  </insert>
+
+  <select id="findOrdersWithItems" resultMap="OrderWithItemsMap">
+    select o.id as order_id, o.user_id, o.total,
+           i.id as item_id, i.order_id, i.sku, i.qty
+    from orders o left join order_items i on o.id = i.order_id
+    order by o.id, i.id
+  </select>
+
+  <resultMap id="OrderSimpleMap" type="com.simon.mybatis.domain.Order">
+    <id property="id" column="order_id"/>
+    <result property="userId" column="user_id"/>
+    <result property="total" column="total"/>
+  </resultMap>
+
+  <select id="findAllOrders" resultMap="OrderSimpleMap">
+    select o.id as order_id, o.user_id, o.total from orders o order by o.id
+  </select>
+
+  <select id="findItemsByOrderId" parameterType="long" resultType="com.simon.mybatis.domain.OrderItem">
+    select id as id, order_id as orderId, sku, qty from order_items where order_id = #{orderId}
+  </select>
+
+  <select id="findItemsByOrderIdList" parameterType="long" resultMap="OrderItemMap">
+    select i.id as item_id, i.order_id, i.sku, i.qty
+    from order_items i where i.order_id = #{orderId}
+    order by i.id
+  </select>
+
+  <select id="countOrders" resultType="long">
+    select count(*) from orders
+  </select>
+
+  <delete id="deleteAllOrders">
+    delete from orders
+  </delete>
+
+  <delete id="deleteAllItems">
+    delete from order_items
+  </delete>
+
+  <delete id="deleteOrdersByIdRange">
+    delete from orders where id between #{startId} and #{endId}
+  </delete>
+
+  <delete id="deleteItemsByOrderIdRange">
+    delete from order_items where order_id between #{startId} and #{endId}
+  </delete>
 </mapper>
 

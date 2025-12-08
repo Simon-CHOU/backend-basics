@@ -16,7 +16,8 @@ class Lab1_EntityPersistenceContextTest {
     @Autowired UserRepository repo;
     @PersistenceContext EntityManager em;
 
-    @Test
+
+@Test
     @Transactional
     void AC_entityChangesAreFlushedWithoutExplicitSave() {
         User u = new User();
