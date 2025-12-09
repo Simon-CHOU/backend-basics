@@ -1,4 +1,4 @@
-package com.simon.mybatis.data;
+package com.simon.mybatis;
 
 import com.simon.mybatis.domain.Order;
 import com.simon.mybatis.domain.OrderItem;

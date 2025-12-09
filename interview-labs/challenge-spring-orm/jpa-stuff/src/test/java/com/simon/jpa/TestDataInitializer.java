@@ -1,4 +1,4 @@
-package com.simon.jpa.data;
+package com.simon.jpa;
 
 import com.simon.jpa.domain.Order;
 import com.simon.jpa.domain.OrderItem;
