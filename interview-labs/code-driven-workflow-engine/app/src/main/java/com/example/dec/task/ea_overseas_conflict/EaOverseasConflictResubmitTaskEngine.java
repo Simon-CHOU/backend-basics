@@ -14,6 +14,9 @@ import java.util.List;
 @Component(ProcessNodeConstants.EA_OVERSEAS_CONFLICT_RESUBMIT)
 public class EaOverseasConflictResubmitTaskEngine extends AbstractTaskEngine {
   @Override
+  public void start(ProcessRequest req, ProcessResponse resp) { }
+
+  @Override
   public List<String> next(ProcessRequest req, ProcessResponse resp) { return Collections.emptyList(); }
   @Override
   public String getTaskAssignRoleCode(ProcessRequest req) { return RoleConstants.STARTER_ROLE; }

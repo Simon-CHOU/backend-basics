@@ -21,6 +21,9 @@ public class EaOverseasConflictPAEManagerTaskEngine extends AbstractTaskEngine {
   @Autowired private ProjectTaskService taskService;
 
   @Override
+  public void start(ProcessRequest req, ProcessResponse resp) { }
+
+  @Override
   public void complete(ProcessRequest req, ProcessResponse resp) {
     super.complete(req, resp);
     List<ProjectTask> tasks = taskService.findByProcess(req.getProcessId());
