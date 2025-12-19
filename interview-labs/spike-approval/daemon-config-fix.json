@@ -1,0 +1,15 @@
+{
+  "builder": {
+    "gc": {
+      "defaultKeepStorage": "20GB",
+      "enabled": true
+    }
+  },
+  "experimental": false,
+  "registry-mirrors": [
+    "https://docker.m.daocloud.io",
+    "https://huecker.io",
+    "https://docker.1panel.live",
+    "https://mirror.baidubce.com"
+  ]
+}

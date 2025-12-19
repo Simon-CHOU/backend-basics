@@ -9,11 +9,44 @@ This service demonstrates the Chain of Responsibility pattern using Spring Boot.
 
 ## Running the Application
 
+### Option 1: Development Mode
+
+**Backend:**
 ```bash
 mvn spring-boot:run
 ```
+Starts on `http://localhost:8089`.
 
-The service will start on `http://localhost:8089`.
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Starts on `http://localhost:5173`.
+
+### Option 2: Production Mode (Docker Compose)
+
+Deploy the entire stack (Backend + Frontend) using Docker Compose.
+
+**Prerequisites:**
+- Docker Desktop (or Docker Engine + Docker Compose)
+
+**Steps:**
+
+1. Build and run containers:
+   ```bash
+   docker-compose up --build
+   ```
+
+2. Access the application:
+   - **Frontend**: `http://localhost` (Port 80)
+   - **Backend API**: `http://localhost:8089`
+
+**Stopping the application:**
+```bash
+docker-compose down
+```
 
 ## API Usage
 

@@ -26,35 +26,38 @@ public class ApprovalControllerIntegrationTest {
     public void testTeamLeaderApproval() throws Exception {
         ApprovalRequest request = new ApprovalRequest(500.0, "Team Lunch");
         
-        mockMvc.perform(post("/api/approval")
+        mockMvc.perform(post("/api/approval/submit")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.approvedBy").value("Team Leader"))
-                .andExpect(jsonPath("$.status").value("APPROVED"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.status").value("approved"))
+                .andExpect(jsonPath("$.message").value("Approved by Team Leader"));
     }
 
     @Test
     public void testDeptManagerApproval() throws Exception {
         ApprovalRequest request = new ApprovalRequest(2500.0, "New Laptops");
         
-        mockMvc.perform(post("/api/approval")
+        mockMvc.perform(post("/api/approval/submit")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.approvedBy").value("Department Manager"))
-                .andExpect(jsonPath("$.status").value("APPROVED"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.status").value("approved"))
+                .andExpect(jsonPath("$.message").value("Approved by Department Manager"));
     }
 
     @Test
     public void testCEOApproval() throws Exception {
         ApprovalRequest request = new ApprovalRequest(10000.0, "New Office");
         
-        mockMvc.perform(post("/api/approval")
+        mockMvc.perform(post("/api/approval/submit")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.approvedBy").value("CEO"))
-                .andExpect(jsonPath("$.status").value("APPROVED"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.status").value("approved"))
+                .andExpect(jsonPath("$.message").value("Approved by CEO"));
     }
 }

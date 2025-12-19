@@ -11,6 +11,6 @@ public class TeamLeader extends ApprovalHandler {
 
     @Override
     protected ApprovalResponse approve(ApprovalRequest request) {
-        return new ApprovalResponse("Team Leader", ApprovalStatus.APPROVED);
+        return createApprovedResponse("Team Leader");
     }
 }

@@ -11,6 +11,6 @@ public class DepartmentManager extends ApprovalHandler {
 
     @Override
     protected ApprovalResponse approve(ApprovalRequest request) {
-        return new ApprovalResponse("Department Manager", ApprovalStatus.APPROVED);
+        return createApprovedResponse("Department Manager");
     }
 }

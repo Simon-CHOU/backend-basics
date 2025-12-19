@@ -11,6 +11,6 @@ public class CEO extends ApprovalHandler {
 
     @Override
     protected ApprovalResponse approve(ApprovalRequest request) {
-        return new ApprovalResponse("CEO", ApprovalStatus.APPROVED);
+        return createApprovedResponse("CEO");
     }
 }
