@@ -1,6 +1,7 @@
 import React from 'react';
-import { Result, Button, Card, Descriptions, Typography } from 'antd';
+import { Result, Button, Card, Descriptions, Typography, Tooltip } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import { ApprovalResponse, ApprovalRequest } from '../types/approval';
 
 const { Text } = Typography;
@@ -14,6 +15,8 @@ const ResultPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state as LocationState;
+
+  console.log('ResultPage state:', state); // Debug log
 
   if (!state) {
     return (
@@ -39,7 +42,7 @@ const ResultPage: React.FC = () => {
         <Result
           status={isApproved ? 'success' : 'error'}
           title={isApproved ? 'Request Approved' : 'Request Rejected'}
-          subTitle={result.message}
+          subTitle={isApproved ? null : result.message}
           extra={[
             <Button type="primary" key="home" onClick={() => navigate('/')}>
               Submit Another Request
@@ -54,6 +57,26 @@ const ResultPage: React.FC = () => {
               <Descriptions.Item label="Purpose">
                 {request.purpose}
               </Descriptions.Item>
+              {result.approver && (
+                <Descriptions.Item 
+                  label={
+                    <span>
+                      Approved By
+                      <Tooltip title={
+                        <div>
+                          <div>&lt; 1000: Team Leader</div>
+                          <div>&lt; 5000: Department Manager</div>
+                          <div>&ge; 5000: CEO</div>
+                        </div>
+                      }>
+                        <InfoCircleOutlined style={{ marginLeft: 8, color: '#1890ff', cursor: 'help' }} />
+                      </Tooltip>
+                    </span>
+                  }
+                >
+                  <Text type="success" strong>{result.approver}</Text>
+                </Descriptions.Item>
+              )}
               {result.approvalId && (
                 <Descriptions.Item label="Approval ID">
                   <Text copyable>{result.approvalId}</Text>

@@ -1,15 +1,17 @@
 # Approval Service Manual
 
-This service demonstrates the Chain of Responsibility pattern using Spring Boot.
+This service demonstrates the Chain of Responsibility pattern using Spring Boot (Backend) and React (Frontend).
 
 ## Prerequisites
 
 - JDK 21
 - Maven
+- Node.js & npm (for local frontend dev)
+- Docker Desktop (for containerized deployment)
 
 ## Running the Application
 
-### Option 1: Development Mode
+### Option 1: Development Mode (Local)
 
 **Backend:**
 ```bash
@@ -27,32 +29,47 @@ Starts on `http://localhost:5173`.
 
 ### Option 2: Production Mode (Docker Compose)
 
-Deploy the entire stack (Backend + Frontend) using Docker Compose.
-
-**Prerequisites:**
-- Docker Desktop (or Docker Engine + Docker Compose)
+Deploy the entire stack (Backend + Frontend) using Docker Compose. This is the recommended way to verify the "MVP" delivery.
 
 **Steps:**
 
-1. Build and run containers:
+1. **Fix Docker Mirror (China Region only)**:
+   If you are in China and have issues pulling images, ensure your `~/.docker/daemon.json` is configured with valid mirrors (see project root `daemon-config-fix.json`).
+
+2. **Build and Run**:
    ```bash
    docker-compose up --build
    ```
 
-2. Access the application:
-   - **Frontend**: `http://localhost` (Port 80)
-   - **Backend API**: `http://localhost:8089`
+3. **Access Application**:
+   - **Frontend (User Interface)**: [http://localhost](http://localhost)
+   - **Backend API**: [http://localhost:8089/actuator/health](http://localhost:8089/actuator/health) (Health Check)
 
-**Stopping the application:**
-```bash
-docker-compose down
-```
+4. **Stop Application**:
+   ```bash
+   docker-compose down
+   ```
+
+### Option 3: Serverless / Cloud Deployment
+
+The application is cloud-ready.
+
+**Backend Configuration:**
+- **Port**: Supports `PORT` environment variable (defaults to 8089).
+- **Health Check**: `/actuator/health` endpoint available.
+
+**Frontend Configuration:**
+- **Backend URL**: Supports `BACKEND_URL` environment variable.
+  - Default: `http://backend:8089` (Docker Compose internal DNS)
+  - For Cloud: Set `BACKEND_URL` to your public backend API URL (e.g., `https://api.myapp.com`).
+
+---
 
 ## API Usage
 
 ### Endpoint
 
-`POST /api/approval`
+`POST /api/approval/submit`
 
 ### Request Body
 
@@ -70,7 +87,7 @@ docker-compose down
 **Request:**
 
 ```bash
-curl -X POST http://localhost:8089/api/approval \
+curl -X POST http://localhost:8089/api/approval/submit \
   -H "Content-Type: application/json" \
   -d '{"amount": 500, "purpose": "Team Lunch"}'
 ```
@@ -79,8 +96,10 @@ curl -X POST http://localhost:8089/api/approval \
 
 ```json
 {
-  "approvedBy": "Team Leader",
-  "status": "APPROVED"
+  "success": true,
+  "approvalId": "uuid-string...",
+  "status": "approved",
+  "message": "Approved by Team Leader"
 }
 ```
 
@@ -89,7 +108,7 @@ curl -X POST http://localhost:8089/api/approval \
 **Request:**
 
 ```bash
-curl -X POST http://localhost:8089/api/approval \
+curl -X POST http://localhost:8089/api/approval/submit \
   -H "Content-Type: application/json" \
   -d '{"amount": 2500, "purpose": "New Laptops"}'
 ```
@@ -98,8 +117,10 @@ curl -X POST http://localhost:8089/api/approval \
 
 ```json
 {
-  "approvedBy": "Department Manager",
-  "status": "APPROVED"
+  "success": true,
+  "approvalId": "uuid-string...",
+  "status": "approved",
+  "message": "Approved by Department Manager"
 }
 ```
 
@@ -108,7 +129,7 @@ curl -X POST http://localhost:8089/api/approval \
 **Request:**
 
 ```bash
-curl -X POST http://localhost:8089/api/approval \
+curl -X POST http://localhost:8089/api/approval/submit \
   -H "Content-Type: application/json" \
   -d '{"amount": 10000, "purpose": "New Office"}'
 ```
@@ -117,7 +138,9 @@ curl -X POST http://localhost:8089/api/approval \
 
 ```json
 {
-  "approvedBy": "CEO",
-  "status": "APPROVED"
+  "success": true,
+  "approvalId": "uuid-string...",
+  "status": "approved",
+  "message": "Approved by CEO"
 }
 ```

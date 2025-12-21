@@ -8,4 +8,5 @@ export interface ApprovalResponse {
   approvalId: string;
   status: 'approved' | 'rejected';
   message: string;
+  approver?: string;
 }

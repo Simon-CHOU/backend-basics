@@ -14,4 +14,5 @@ public class ApprovalResponse {
     private String approvalId;
     private String status; // "approved" or "rejected"
     private String message;
+    private String approver;
 }
