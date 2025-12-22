@@ -125,13 +125,15 @@ class StreamApiTest {
         Map<Integer, List<String>> byLength = words.stream()
             .collect(Collectors.groupingBy(String::length));
         
-        assertEquals(3, byLength.size());
+        assertEquals(4, byLength.size());
         assertTrue(byLength.containsKey(5)); // apple
         assertTrue(byLength.containsKey(6)); // banana, cherry
+        assertTrue(byLength.containsKey(4)); // date
         assertTrue(byLength.containsKey(10)); // elderberry
-        
+
         assertEquals(1, byLength.get(5).size());
         assertEquals(2, byLength.get(6).size());
+        assertEquals(1, byLength.get(4).size());
     }
 
     @Test

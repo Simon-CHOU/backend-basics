@@ -75,14 +75,14 @@ class FunctionalInterfaceTest {
         // AC2: 验证Predicate接口
         Predicate<String> isLong = s -> s.length() > 3;
         assertTrue(isLong.test("long"));
-        assertFalse(isLong.test("short"));
+        assertFalse(isLong.test("big"));
         
         // 测试组合操作
         Predicate<String> containsA = s -> s.contains("a");
         Predicate<String> longAndContainsA = isLong.and(containsA);
         
         assertTrue(longAndContainsA.test("banana"));
-        assertFalse(longAndContainsA.test("apple")); // apple长度>3但包含a
+        assertFalse(longAndContainsA.test("hello")); // hello长度足够但不包含a
         assertFalse(longAndContainsA.test("abc"));   // 长度不足
         
         // 测试negate
@@ -156,7 +156,7 @@ class FunctionalInterfaceTest {
         BiFunction<String, String, Integer> totalLength = 
             (s1, s2) -> s1.length() + s2.length();
         
-        assertEquals(9, totalLength.apply("Hello", "World"));
+        assertEquals(10, totalLength.apply("Hello", "World"));
         assertEquals(0, totalLength.apply("", ""));
     }
 
