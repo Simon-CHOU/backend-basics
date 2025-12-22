@@ -1,0 +1,54 @@
+# Multi-stage build for unified application
+# Stage 1: Build Frontend
+FROM node:18-alpine AS frontend-build
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
+# Stage 2: Build Backend Native Image
+FROM ghcr.io/graalvm/native-image-community:21 AS backend-build
+WORKDIR /app
+RUN microdnf install -y maven
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src ./src
+RUN mvn -Pnative native:compile -DskipTests
+
+# Stage 3: Final Unified Image
+FROM alpine:latest
+
+# Install runtime dependencies
+RUN apk add --no-cache \
+    nginx \
+    curl \
+    ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+# Create app directories
+WORKDIR /app
+RUN mkdir -p /app/nginx/logs /app/static
+
+# Copy backend binary
+COPY --from=backend-build /app/target/spike-approval /app/backend
+
+# Copy frontend static files
+COPY --from=frontend-build /app/frontend/dist /app/static
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Create startup script
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
+# Expose ports
+EXPOSE 80 8089
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:80/ || exit 1
+
+# Start both services
+CMD ["/app/start.sh"]
