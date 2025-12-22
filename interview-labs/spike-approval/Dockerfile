@@ -1,11 +1,25 @@
-FROM maven:3.9.6-eclipse-temurin-21-alpine AS build
+# Stage 1: Build Native Image
+FROM ghcr.io/graalvm/native-image-community:21 AS build
 WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:21-jre-alpine
+# Install Maven
+RUN microdnf install -y maven
+
+# Copy configuration first for caching
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Copy source and build
+COPY src ./src
+RUN mvn -Pnative native:compile -DskipTests
+
+# Stage 2: Runtime
+# Using a glibc-based small image since the build environment is glibc
+FROM debian:bookworm-slim
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+
+# Copy the native binary
+COPY --from=build /app/target/spike-approval /app/spike-approval
+
 EXPOSE 8089
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["/app/spike-approval"]

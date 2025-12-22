@@ -45,3 +45,24 @@
         *   在结果表格中增加 "Approved By" 行。
         *   集成 Ant Design 的 `Tooltip` 组件，悬停显示 `< 1000: Team Leader` 等审批规则。
         *   优化 UI，移除 Result 组件默认的副标题，避免信息重复。
+
+### 5. 镜像体积优化与 GraalVM 适配
+
+*   **问题标题**: 前后端 Docker 镜像体积过大，构建效率低
+*   **问题描述**: 后端镜像包含完整 JRE (300MB+)，前端镜像包含构建缓存，导致拉取和部署缓慢。
+*   **问题原因**: 
+    1.  后端未使用 Native Image 技术，且构建层未分离依赖下载。
+    2.  前端 Dockerfile 未利用分层缓存机制，且包含 Source Maps。
+    3.  缺少 `.dockerignore` 文件，导致构建上下文过大。
+*   **解决方案**:
+    1.  **后端 GraalVM 适配**:
+        *   引入 `native-maven-plugin` 插件。
+        *   使用 `ghcr.io/graalvm/native-image-community:21` 进行 Native Image 编译。
+        *   使用 `debian:bookworm-slim` 作为极简运行时底座。
+        *   分离 Maven 依赖下载层，利用 Docker 缓存。
+    2.  **前端构建优化**:
+        *   **禁止 Source Maps**: 在 `vite.config.ts` 中设置 `sourcemap: false`，从 86MB 降至 21.5MB。
+        *   **精简镜像**: 切换至 `nginx:alpine-slim`。
+        *   分离 `package.json` 拷贝与 `npm ci` 步骤。
+    3.  **构建上下文优化**:
+        *   新增 `.dockerignore` 文件，排除 `node_modules`, `target`, `.git` 等无关文件。
