@@ -30,6 +30,7 @@
         <module>functional-interface-lab</module>
         <module>stream-api-lab</module>
         <module>integration-test</module>
+        <module>practice-lab</module>
     </modules>
 
     <dependencyManagement>

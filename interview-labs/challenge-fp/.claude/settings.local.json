@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mvn clean package:*)"
+      "Bash(mvn clean package:*)",
+      "Bash(mvn compile:*)",
+      "Bash(java:*)",
+      "Bash(mvn exec:java:*)",
+      "Bash(powershell:*)",
+      "Bash(run-encoding.bat:*)",
+      "Bash(cmd:*)"
     ],
     "deny": [],
     "ask": []
