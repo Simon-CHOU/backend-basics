@@ -77,3 +77,19 @@
 *   **解决方案**:
     1.  **修正配置**: 从根目录的 `.dockerignore` 中移除 `frontend` 排除项。
     2.  **PowerShell 命令适配**: 在 Windows PowerShell 环境下，使用 `$env:DOCKER_USERNAME = "..."` 正确设置环境变量，并使用 `"$($env:DOCKER_USERNAME)/..."` 进行变量插值构建。
+
+## 2025-12-29
+
+### 7. Railway 部署统一镜像失败 (start.sh No such file or directory)
+
+*   **问题标题**: Railway 部署 Docker Image 后容器启动失败，提示 `/app/start.sh` 不存在
+*   **问题描述**: 将 `Dockerfile.unified` 构建的镜像推送到 Docker Hub 并在 Railway 以 Docker Image 方式部署时，容器启动阶段反复崩溃，日志显示 `exec container process (missing dynamic library?) '/app/start.sh': No such file or directory`。
+*   **问题原因**:
+    1.  **脚本行尾格式不兼容**: 在 Windows 环境下（Git 自动转换 CRLF）导致 `start.sh` 以 CRLF 结尾，Linux 容器执行脚本时 Shebang 解析失败，表现为无法执行 `/app/start.sh`。
+    2.  **Nginx 配置路径不正确**: `nginx.conf` 为完整主配置（包含 `events/http` 块），复制到 `conf.d/default.conf` 会导致 Nginx 启动不稳定或行为异常。
+    3.  **不必要的依赖增加构建波动**: `nginx-extras` 依赖较多，构建时偶发拉取失败（如 apt 502），影响可重复构建与部署稳定性。
+*   **解决方案**:
+    1.  **统一镜像启动修复**: 在 `Dockerfile.unified` 中对 `/app/start.sh` 执行 `sed -i 's/\\r$//'` 强制转换为 LF，并使用 `CMD [\"/bin/sh\", \"/app/start.sh\"]` 启动，避免 Shebang 行尾问题。
+    2.  **Nginx 配置修正**: 将 `nginx.conf` 复制到 `/etc/nginx/nginx.conf`，与其配置结构匹配。
+    3.  **降低构建依赖**: 将运行时依赖从 `nginx-extras` 调整为 `nginx`，减少依赖面，提升构建稳定性。
+    4.  **本地验证**: 本地构建并运行统一镜像后，`/health` 返回 `200`，前后端链路可正常启动并对外服务。

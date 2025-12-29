@@ -50,7 +50,45 @@ Deploy the entire stack (Backend + Frontend) using Docker Compose. This is the r
    docker-compose down
    ```
 
-### Option 3: Serverless / Cloud Deployment
+### Option 3: Quick Deploy to Railway (Docker Image)
+
+Deploy the entire stack as a single Docker image to Railway. This is the fastest way to get a public URL.
+
+**Prerequisites:**
+- Docker Desktop installed and logged in to Docker Hub
+- A Railway account (free tier available)
+
+**Steps:**
+
+1. **Build and Push to Docker Hub:**
+   ```powershell
+   # Set your Docker Hub username
+   $DOCKER_USERNAME = "your-dockerhub-username"
+
+   # Build the unified image (includes both frontend and backend)
+   docker build -f Dockerfile.unified -t "${DOCKER_USERNAME}/spike-approval:latest" .
+
+   # Push to Docker Hub
+   docker push "${DOCKER_USERNAME}/spike-approval:latest"
+   ```
+
+2. **Deploy to Railway:**
+   - Go to [railway.app](https://railway.app)
+   - Click "New Project" → "Deploy from Docker Image"
+   - Enter image: `your-dockerhub-username/spike-approval:latest`
+   - Click "Deploy"
+
+3. **Access Application:**
+   - Railway will provide a public URL like: `https://your-app.railway.app`
+   - The app includes both frontend (port 80) and backend (proxied via `/api`)
+
+**Architecture:**
+- Nginx serves the React frontend on port 80
+- Backend runs on port 8089 (internal)
+- API requests to `/api/*` are proxied to the backend
+- Health check available at `/health`
+
+### Option 4: Serverless / Cloud Deployment
 
 The application is cloud-ready.
 
