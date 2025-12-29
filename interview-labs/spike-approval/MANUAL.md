@@ -63,6 +63,25 @@ The application is cloud-ready.
   - Default: `http://backend:8089` (Docker Compose internal DNS)
   - For Cloud: Set `BACKEND_URL` to your public backend API URL (e.g., `https://api.myapp.com`).
 
+### Option 4: Manual Build & Push (PowerShell)
+
+If you need to build and push the unified Docker image manually in a Windows PowerShell environment:
+
+1. **Set Environment Variable**:
+   ```powershell
+   $env:DOCKER_USERNAME = "your_username"
+   ```
+
+2. **Build Unified Image**:
+   ```powershell
+   docker build -f Dockerfile.unified -t "$($env:DOCKER_USERNAME)/spike-approval:latest" .
+   ```
+
+3. **Push to Registry**:
+   ```powershell
+   docker push "$($env:DOCKER_USERNAME)/spike-approval:latest"
+   ```
+
 ---
 
 ## API Usage

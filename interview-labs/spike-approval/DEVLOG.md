@@ -16,7 +16,7 @@
 ### 2. 前端界面更新未生效 (缓存问题)
 
 *   **问题标题**: 前端代码修改后，浏览器显示仍为旧版本
-*   **问题描述**: 修改了 `ResultPage.tsx` 以添加 "Approved By" 字段和移除冗余标题，但在浏览器中验证时，界面未发生变化。
+*   **问题描述**: 修改了 `ResultPage.tsx` 以添加 "Approved By" 字段 and 移除冗余标题，但在浏览器中验证时，界面未发生变化。
 *   **问题原因**:
     1.  **Docker 构建缓存**: Docker 复用了之前的构建层，未包含最新的代码变更。
     2.  **浏览器/Nginx 缓存**: Nginx 默认可能缓存了 `index.html`，导致浏览器加载旧的入口文件。
@@ -66,3 +66,14 @@
         *   分离 `package.json` 拷贝与 `npm ci` 步骤。
     3.  **构建上下文优化**:
         *   新增 `.dockerignore` 文件，排除 `node_modules`, `target`, `.git` 等无关文件。
+
+### 6. 统一镜像构建失败 (Docker Ignore 冲突)
+
+*   **问题标题**: 执行 `docker build -f Dockerfile.unified` 时提示 `frontend: not found`
+*   **问题描述**: 在使用统一 Dockerfile 构建前后端一体化镜像时，构建进程无法找到 `frontend/` 目录。
+*   **问题原因**: 
+    1.  **配置冲突**: 之前的 `.dockerignore` 文件中为了优化单体构建，排除了 `frontend` 目录。
+    2.  **构建上下文受限**: 当从根目录构建统一镜像时，被忽略的目录对 Docker 引擎不可见。
+*   **解决方案**:
+    1.  **修正配置**: 从根目录的 `.dockerignore` 中移除 `frontend` 排除项。
+    2.  **PowerShell 命令适配**: 在 Windows PowerShell 环境下，使用 `$env:DOCKER_USERNAME = "..."` 正确设置环境变量，并使用 `"$($env:DOCKER_USERNAME)/..."` 进行变量插值构建。
