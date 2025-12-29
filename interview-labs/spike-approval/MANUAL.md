@@ -63,24 +63,47 @@ The application is cloud-ready.
   - Default: `http://backend:8089` (Docker Compose internal DNS)
   - For Cloud: Set `BACKEND_URL` to your public backend API URL (e.g., `https://api.myapp.com`).
 
-### Option 4: Manual Build & Push (PowerShell)
+### Option 5: Kubernetes (Production)
 
-If you need to build and push the unified Docker image manually in a Windows PowerShell environment:
+For large-scale production deployment, use the provided Kubernetes manifests in the `k8s/` directory.
 
-1. **Set Environment Variable**:
-   ```powershell
-   $env:DOCKER_USERNAME = "your_username"
-   ```
+1.  **Build and Push Images**:
+    Build your images and push them to a container registry (e.g., Docker Hub, Tencent Cloud CCR).
+    ```powershell
+    # Example for Backend
+    docker build -t <YOUR_REGISTRY>/approval-backend:latest .
+    docker push <YOUR_REGISTRY>/approval-backend:latest
 
-2. **Build Unified Image**:
-   ```powershell
-   docker build -f Dockerfile.unified -t "$($env:DOCKER_USERNAME)/spike-approval:latest" .
-   ```
+    # Example for Frontend
+    docker build -t <YOUR_REGISTRY>/approval-frontend:latest ./frontend
+    docker push <YOUR_REGISTRY>/approval-frontend:latest
+    ```
 
-3. **Push to Registry**:
-   ```powershell
-   docker push "$($env:DOCKER_USERNAME)/spike-approval:latest"
-   ```
+2.  **Update Manifests**:
+    Edit `k8s/backend.yaml` and `k8s/frontend.yaml` to replace `<YOUR_REGISTRY>` with your actual registry address.
+
+3.  **Apply to Cluster**:
+    ```bash
+    kubectl apply -f k8s/backend.yaml
+    kubectl apply -f k8s/frontend.yaml
+    ```
+
+4.  **Verify**:
+    ```bash
+    kubectl get pods
+    kubectl get services approval-frontend
+    ```
+
+---
+
+## FAQ
+
+**Q: Can I pull my image from anywhere after `docker push`?**
+
+**A:** It depends on your repository's visibility:
+- **Public Repository**: Anyone can pull the image if they know the name (e.g., `docker pull username/image`).
+- **Private Repository**: Only authenticated users can pull. In Kubernetes, you must create an `imagePullSecret` and reference it in your Deployment to allow the cluster to pull from a private registry.
+- **Cloud Registry (CCR/ACR)**: Usually private by default. When using a cloud-managed K8S (like TKE), the cluster is often pre-configured to pull from its own registry.
 
 ---
 

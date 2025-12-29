@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: approval-frontend
+  labels:
+    app: approval-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: approval-frontend
+  template:
+    metadata:
+      labels:
+        app: approval-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: <YOUR_REGISTRY>/spike-approval-frontend:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: BACKEND_URL
+          value: "http://approval-backend:8089" # 指向后端 Service 的 DNS
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: approval-frontend
+spec:
+  selector:
+    app: approval-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer # 在云平台上会自动创建公网负载均衡器

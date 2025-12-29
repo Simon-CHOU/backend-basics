@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: approval-backend
+  labels:
+    app: approval-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: approval-backend
+  template:
+    metadata:
+      labels:
+        app: approval-backend
+    spec:
+      containers:
+      - name: backend
+        image: <YOUR_REGISTRY>/spike-approval-backend:latest
+        ports:
+        - containerPort: 8089
+        env:
+        - name: SERVER_PORT
+          value: "8089"
+        # GraalVM Native Image 启动极快，但仍建议配置探针
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8089
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8089
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: approval-backend
+spec:
+  selector:
+    app: approval-backend
+  ports:
+    - protocol: TCP
+      port: 8089
+      targetPort: 8089
+  type: ClusterIP
