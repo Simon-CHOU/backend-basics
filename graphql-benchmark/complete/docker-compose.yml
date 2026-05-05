@@ -1,0 +1,15 @@
+services:
+  benchmark:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "512M"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx256m -XX:+UseG1GC"

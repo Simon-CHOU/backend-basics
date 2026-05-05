@@ -1,0 +1,24 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+.idea/
+*.iml
+*.iws
+*.ipr
+
+### JMeter ###
+results/
+*.log
+
+### Java ###
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+
+### OS ###
+.DS_Store
+Thumbs.db

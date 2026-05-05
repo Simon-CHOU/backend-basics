@@ -16,7 +16,175 @@
 - Docker
 - Java21
 
-## background context
+## 用法
+
+### 快速开始
+
+```bash
+# 1. 进入 complete 目录，构建并启动
+cd complete
+mvnw clean package -DskipTests
+java -jar target/protocol-benchmark-1.0.0.jar
+
+# 2. 验证三种协议端点
+# REST
+curl -s http://localhost:8080/api/orders/ORD-000001
+
+# GraphQL (也可以浏览器打开 http://localhost:8080/graphiql)
+curl -s -X POST http://localhost:8080/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ orderDetail(orderId:\"ORD-000500\") { orderId status totalAmount userName userEmail } }"}'
+
+# gRPC (需要 ghz 工具)
+ghz --insecure --proto src/main/proto/orderdetail.proto \
+  --call benchmark.OrderDetailService/GetOrderDetail \
+  -d '{"order_id":"ORD-000500"}' \
+  -n 100 -c 10 localhost:9090
+
+# 3. 压测
+cd jmeter
+jmeter -n -t rest-benchmark.jmx -Jthreads=100 -Jduration=60 -l results/rest.csv -e -o results/rest-report
+jmeter -n -t graphql-benchmark.jmx -Jthreads=100 -Jduration=60 -l results/graphql.csv -e -o results/graphql-report
+```
+
+### 项目结构
+
+```
+graphql-benchmark/
+├── README.md
+├── summary.txt                          # 概念笔记 (被导师批注的原文)
+│
+├── complete/                            # 完整可运行项目 → 参考实现
+│   ├── pom.xml                          # Spring Boot 3.3.5 + DGS + gRPC
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   ├── src/main/proto/
+│   │   └── orderdetail.proto            # gRPC 契约定义
+│   ├── src/main/resources/
+│   │   ├── application.yml
+│   │   └── schema/
+│   │       └── orderdetail.graphqls     # GraphQL Schema
+│   ├── src/main/java/com/simon/benchmark/
+│   │   ├── ProtocolBenchmarkApplication.java
+│   │   ├── domain/                      # 领域模型
+│   │   │   ├── Order.java
+│   │   │   ├── OrderItem.java
+│   │   │   ├── OrderStatus.java
+│   │   │   ├── OrderDetailView.java     # 聚合视图 DTO
+│   │   │   └── User.java
+│   │   ├── application/
+│   │   │   └── OrderDetailUseCase.java  # 聚合用例 (三种协议共用)
+│   │   ├── infra/                       # Mock 仓储 (无外部依赖)
+│   │   │   ├── OrderRepository.java
+│   │   │   └── UserRepository.java
+│   │   ├── rest/
+│   │   │   └── OrderDetailController.java   # REST: GET /api/orders/{id}
+│   │   ├── grpc/
+│   │   │   ├── GrpcServerRunner.java    # gRPC Server :9090
+│   │   │   └── OrderDetailGrpcService.java
+│   │   └── graphql/
+│   │       └── OrderDetailDataFetcher.java  # DGS @DgsQuery
+│   ├── jmeter/                          # JMeter 压测计划
+│   │   ├── rest-benchmark.jmx
+│   │   ├── graphql-benchmark.jmx
+│   │   ├── graphql-query.json
+│   │   └── order_ids.csv
+│   └── scripts/                         # 实验工具
+│       ├── run-benchmark.bat
+│       └── report-template.md
+│
+└── initial/                             # 练习骨架 → 动手补全 (带 TODO)
+    ├── pom.xml                          # 依赖同 complete，可编译
+    ├── src/main/proto/orderdetail.proto # ← 给定
+    ├── src/main/resources/
+    │   ├── application.yml              # ← 给定
+    │   └── schema/orderdetail.graphqls  # ← 给定
+    └── src/main/java/com/simon/benchmark/
+        ├── domain/                      # ← 全部完整 (Order/User 等)
+        ├── infra/                       # ← 全部完整 (OrderRepository/UserRepository)
+        ├── application/
+        │   ├── OrderDetailUseCase.java       # ← 接口定义 (给定)
+        │   └── OrderDetailUseCaseImpl.java   # TODO: 实现聚合逻辑
+        ├── rest/
+        │   └── OrderDetailController.java    # TODO: 实现 REST 端点
+        ├── grpc/
+        │   ├── GrpcServerRunner.java         # ← 框架已给定
+        │   └── OrderDetailGrpcService.java  # TODO: 实现 gRPC 服务
+        └── graphql/
+            └── OrderDetailDataFetcher.java   # TODO: 实现 DGS DataFetcher
+```
+
+### 练习路线
+
+本仓库专为**反复刻意练习**设计。建议按以下三轮迭代，每轮加深理解：
+
+#### 第一轮：补全 `initial` → 让三种协议跑通
+
+| 顺序 | 文件 | 难度 | 学什么 |
+|------|------|------|--------|
+| 1 | `application/OrderDetailUseCaseImpl.java` | ⭐ | 聚合 Order+User，字段映射 |
+| 2 | `rest/OrderDetailController.java` | ⭐ | `@RestController` + `@GetMapping` + Jackson 自动序列化 |
+| 3 | `graphql/OrderDetailDataFetcher.java` | ⭐⭐ | `@DgsComponent` + `@DgsQuery` + Schema 匹配 |
+| 4 | `grpc/OrderDetailGrpcService.java` | ⭐⭐⭐ | protobuf Builder 映射、StreamObserver |
+
+完成后可以 `mvn test` 验证，`java -jar` 启动并用 curl 验证三种端点。
+
+#### 第二轮：读懂 `complete` → 比对自己的实现
+
+做完后对照 `complete/` 逐文件 diff，重点观察：
+- **协议适配层的区别**：REST 直接返回 Java Bean（Jackson 自动 JSON），gRPC 需要 Builder 逐字段映射为 Protobuf Message，GraphQL 需要 Schema 与 Java DTO 类型对齐。
+- **共用的 application 层**：`OrderDetailUseCase` 是唯一聚合逻辑入口，三种协议共享，差异严格收敛在适配层。
+- **Mock 数据设计**：1000 条订单 + 200 用户，内存 `ConcurrentHashMap`，排除 DB 噪声。
+
+#### 第三轮：压测对比 → 用数据说话
+
+```bash
+# 重启服务器，确认日志级别为 WARN (application.yml)
+java -jar target/protocol-benchmark-1.0.0.jar
+
+# REST 压测 (50 线程，60 秒)
+jmeter -n -t jmeter/rest-benchmark.jmx -Jthreads=100 -Jduration=60 -l results/rest.csv -e -o results/rest-report
+
+# GraphQL 压测
+jmeter -n -t jmeter/graphql-benchmark.jmx -Jthreads=100 -Jduration=60 -l results/graphql.csv -e -o results/graphql-report
+
+# gRPC 压测 (ghz)
+ghz --insecure --proto src/main/proto/orderdetail.proto \
+  --call benchmark.OrderDetailService/GetOrderDetail \
+  -d '{"order_id":"ORD-000500"}' -n 100000 -c 100 localhost:9090
+```
+
+将三组数据填入 `scripts/report-template.md`：
+- **P99 延迟**：REST vs GraphQL vs gRPC 的 P50/P90/P95/P99/P99.9
+- **内存占用**：堆使用量峰值、GC 次数与停顿
+- **序列化 CPU**：JMeter 端或 async-profiler/JFR 采样热点
+
+#### 控制变量清单（确保对比公平）
+
+| 变量 | 约束 |
+|------|------|
+| 业务逻辑 | 三种协议共用同一个 `OrderDetailUseCase` |
+| 数据源 | 同一个 `ConcurrentHashMap` 内存 Mock |
+| JVM 参数 | `-Xms256m -Xmx256m -XX:+UseG1GC` |
+| 日志级别 | `WARN`，避免 I/O 扭曲结果 |
+| 预热 | 5 秒 ramp-up，排除 JIT 编译期波动 |
+| 负载 | 同并发数、同压测时长、同数据集 |
+
+### 常见问题
+
+**Q: `initial` 编译报错？**
+先 `mvn compile` 生成 protobuf stub 类（`target/generated-sources/protobuf/`），IDE 中标记该目录为 Generated Sources。
+
+**Q: gRPC 端口 9090 启动失败？**
+有残留 Java 进程占用。执行 `Stop-Process -Name java -Force`（Windows）或 `pkill -f protocol-benchmark`（Linux/macOS）。
+
+**Q: 只想跑 REST 或 GraphQL，不想跑 gRPC？**
+在 `grpc/GrpcServerRunner.java` 上注释 `@Component` 即可。
+
+**Q: 数据量太少，想加大？**
+修改 `OrderRepository` 和 `UserRepository` 中 static 块的循环次数，重新打包即可。
+
+## 附录: background context
 
 ### Q:
 附件[summary.txt](summary.txt)是我总结的一份有关GraphQL 技术选型和上手指引的guide。

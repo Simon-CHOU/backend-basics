@@ -1,0 +1,1 @@
+{"query":"query OrderDetail($orderId: ID!) { orderDetail(orderId: $orderId) { orderId status totalAmount shippingAddress orderCreatedAt items { productId productName quantity unitPrice } userName userEmail userPhone userRegisteredAt } }","variables":{"orderId":"ORD-000500"}}

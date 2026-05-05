@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.simon.benchmark.grpc.stub";
+option java_outer_classname = "OrderDetailProto";
+
+package benchmark;
+
+service OrderDetailService {
+  rpc GetOrderDetail (OrderDetailRequest) returns (OrderDetailResponse);
+}
+
+message OrderDetailRequest {
+  string order_id = 1;
+}
+
+message OrderDetailResponse {
+  string order_id = 1;
+  string status = 2;
+  string total_amount = 3;
+  string shipping_address = 4;
+  string order_created_at = 5;
+  repeated OrderItemMsg items = 6;
+  string user_name = 7;
+  string user_email = 8;
+  string user_phone = 9;
+  string user_registered_at = 10;
+}
+
+message OrderItemMsg {
+  string product_id = 1;
+  string product_name = 2;
+  int32 quantity = 3;
+  string unit_price = 4;
+}
