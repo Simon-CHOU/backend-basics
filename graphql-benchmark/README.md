@@ -42,9 +42,9 @@ ghz --insecure --proto src/main/proto/orderdetail.proto \
   -n 100 -c 10 localhost:9090
 
 # 3. 压测
-cd jmeter
-jmeter -n -t rest-benchmark.jmx -Jthreads=100 -Jduration=60 -l results/rest.csv -e -o results/rest-report
-jmeter -n -t graphql-benchmark.jmx -Jthreads=100 -Jduration=60 -l results/graphql.csv -e -o results/graphql-report
+cd complete/benchmark-workspace
+jmeter -n -t jmeter/rest-benchmark.jmx -Jthreads=100 -Jduration=60 -l results/rest.csv -e -o results/rest-report
+jmeter -n -t jmeter/graphql-benchmark.jmx -Jthreads=100 -Jduration=60 -l results/graphql.csv -e -o results/graphql-report
 ```
 
 ### 项目结构
@@ -58,6 +58,17 @@ graphql-benchmark/
 │   ├── pom.xml                          # Spring Boot 3.3.5 + DGS + gRPC
 │   ├── Dockerfile
 │   ├── docker-compose.yml
+│   ├── benchmark-workspace/             # 压测工作区 (工具与结果内聚)
+│   │   ├── jmeter/                      # JMeter 压测计划与数据
+│   │   │   ├── rest-benchmark.jmx
+│   │   │   ├── graphql-benchmark.jmx
+│   │   │   ├── graphql-query.json
+│   │   │   └── order_ids.csv
+│   │   ├── scripts/                     # 实验与报告工具
+│   │   │   ├── run-benchmark.bat
+│   │   │   └── report-template.md
+│   │   ├── test-all.ps1                 # 一键压测脚本
+│   │   └── results/                     # 测试结果与报告
 │   ├── src/main/proto/
 │   │   └── orderdetail.proto            # gRPC 契约定义
 │   ├── src/main/resources/
@@ -84,14 +95,6 @@ graphql-benchmark/
 │   │   │   └── OrderDetailGrpcService.java
 │   │   └── graphql/
 │   │       └── OrderDetailDataFetcher.java  # DGS @DgsQuery
-│   ├── jmeter/                          # JMeter 压测计划
-│   │   ├── rest-benchmark.jmx
-│   │   ├── graphql-benchmark.jmx
-│   │   ├── graphql-query.json
-│   │   └── order_ids.csv
-│   └── scripts/                         # 实验工具
-│       ├── run-benchmark.bat
-│       └── report-template.md
 │
 └── initial/                             # 练习骨架 → 动手补全 (带 TODO)
     ├── pom.xml                          # 依赖同 complete，可编译
@@ -142,14 +145,17 @@ graphql-benchmark/
 # 重启服务器，确认日志级别为 WARN (application.yml)
 java -jar target/protocol-benchmark-1.0.0.jar
 
-# REST 压测 (50 线程，60 秒)
+# 进入压测工作区
+cd benchmark-workspace
+
+# REST 压测 (100 线程，60 秒)
 jmeter -n -t jmeter/rest-benchmark.jmx -Jthreads=100 -Jduration=60 -l results/rest.csv -e -o results/rest-report
 
 # GraphQL 压测
 jmeter -n -t jmeter/graphql-benchmark.jmx -Jthreads=100 -Jduration=60 -l results/graphql.csv -e -o results/graphql-report
 
 # gRPC 压测 (ghz)
-ghz --insecure --proto src/main/proto/orderdetail.proto \
+ghz --insecure --proto ../src/main/proto/orderdetail.proto \
   --call benchmark.OrderDetailService/GetOrderDetail \
   -d '{"order_id":"ORD-000500"}' -n 100000 -c 100 localhost:9090
 ```
