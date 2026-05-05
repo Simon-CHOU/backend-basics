@@ -11,6 +11,6 @@ target/
 *.swp
 *.bak
 results/
-complete/tools/
-complete/scripts/grpc_stubs/
-complete/jmeter/results-*.csv
+complete/benchmark-workspace/tools/
+complete/benchmark-workspace/scripts/grpc_stubs/
+complete/benchmark-workspace2/scripts/grpc_stubs/
