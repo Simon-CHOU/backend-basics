@@ -52,70 +52,49 @@ jmeter -n -t jmeter/graphql-benchmark.jmx -Jthreads=100 -Jduration=60 -l results
 ```
 graphql-benchmark/
 ├── README.md
-├── summary.txt                          # 概念笔记 (被导师批注的原文)
+├── summary.txt                              # 概念笔记 (被导师批注的原文)
 │
-├── complete/                            # 完整可运行项目 → 参考实现
-│   ├── pom.xml                          # Spring Boot 3.3.5 + DGS + gRPC
-│   ├── Dockerfile
-│   ├── docker-compose.yml
-│   ├── benchmark-workspace/             # 压测工作区 (工具与结果内聚)
-│   │   ├── jmeter/                      # JMeter 压测计划与数据
-│   │   │   ├── rest-benchmark.jmx
-│   │   │   ├── graphql-benchmark.jmx
-│   │   │   ├── graphql-query.json
-│   │   │   └── order_ids.csv
-│   │   ├── scripts/                     # 实验与报告工具
-│   │   │   ├── run-benchmark.bat
-│   │   │   └── report-template.md
-│   │   ├── test-all.ps1                 # 一键压测脚本
-│   │   └── results/                     # 测试结果与报告
-│   ├── src/main/proto/
-│   │   └── orderdetail.proto            # gRPC 契约定义
+├── complete/                                # 完整可运行项目 → 参考实现
+│   ├── pom.xml                              # Spring Boot 3.3.5 + DGS + gRPC
+│   ├── Dockerfile / docker-compose.yml      # 容器化 (可选)
+│   │
+│   ├── src/main/proto/orderdetail.proto     # gRPC 契约 (IDL)
 │   ├── src/main/resources/
-│   │   ├── application.yml
-│   │   └── schema/
-│   │       └── orderdetail.graphqls     # GraphQL Schema
-│   ├── src/main/java/com/simon/benchmark/
-│   │   ├── ProtocolBenchmarkApplication.java
-│   │   ├── domain/                      # 领域模型
-│   │   │   ├── Order.java
-│   │   │   ├── OrderItem.java
-│   │   │   ├── OrderStatus.java
-│   │   │   ├── OrderDetailView.java     # 聚合视图 DTO
-│   │   │   └── User.java
-│   │   ├── application/
-│   │   │   └── OrderDetailUseCase.java  # 聚合用例 (三种协议共用)
-│   │   ├── infra/                       # Mock 仓储 (无外部依赖)
-│   │   │   ├── OrderRepository.java
-│   │   │   └── UserRepository.java
-│   │   ├── rest/
-│   │   │   └── OrderDetailController.java   # REST: GET /api/orders/{id}
-│   │   ├── grpc/
-│   │   │   ├── GrpcServerRunner.java    # gRPC Server :9090
-│   │   │   └── OrderDetailGrpcService.java
-│   │   └── graphql/
-│   │       └── OrderDetailDataFetcher.java  # DGS @DgsQuery
+│   │   ├── application.yml                  # 日志 WARN, 端口 8080
+│   │   └── schema/orderdetail.graphqls      # GraphQL Schema
+│   │
+│   ├── src/.../benchmark/                   # ── 被测系统 (SUT) ──
+│   │   ├── domain/                          #   领域模型: Order, User, OrderDetailView
+│   │   ├── application/OrderDetailUseCase   #   聚合用例 (三种协议共用此入口)
+│   │   ├── infra/                           #   Mock 仓储 (ConcurrentHashMap, 无 DB)
+│   │   ├── rest/OrderDetailController       #   REST 适配器 → GET /api/orders/{id}
+│   │   ├── grpc/OrderDetailGrpcService      #   gRPC 适配器 → :9090
+│   │   └── graphql/OrderDetailDataFetcher   #   GraphQL 适配器 → POST /graphql
+│   │
+│   ├── benchmark-workspace/                 # 压测工作区 A (Trae 工具链: JMeter + ghz)
+│   │   ├── jmeter/                          #   JMeter 压测计划 (.jmx) + 测试数据
+│   │   ├── scripts/                         #   Python 基准脚本 + gRPC stubs
+│   │   ├── run-all-benchmarks.sh            #   Bash 一键压测
+│   │   ├── test-all.ps1 / run-jfr.ps1       #   PowerShell 一键压测 + JFR 采样
+│   │   └── results/                         #   压测结果归档 (CSV + HTML 报告)
+│   │
+│   └── benchmark-workspace2/                # 压测工作区 B (Claude Code 工具链)
+│       ├── jmeter/                          #   JMeter 压测计划 (.jmx) + 测试数据
+│       ├── scripts/                         #   Python 基准脚本 + gRPC stubs
+│       ├── run-all-benchmarks.sh            #   Bash 一键压测
+│       └── results/                         #   压测结果归档
 │
-└── initial/                             # 练习骨架 → 动手补全 (带 TODO)
-    ├── pom.xml                          # 依赖同 complete，可编译
-    ├── src/main/proto/orderdetail.proto # ← 给定
-    ├── src/main/resources/
-    │   ├── application.yml              # ← 给定
-    │   └── schema/orderdetail.graphqls  # ← 给定
-    └── src/main/java/com/simon/benchmark/
-        ├── domain/                      # ← 全部完整 (Order/User 等)
-        ├── infra/                       # ← 全部完整 (OrderRepository/UserRepository)
-        ├── application/
-        │   ├── OrderDetailUseCase.java       # ← 接口定义 (给定)
-        │   └── OrderDetailUseCaseImpl.java   # TODO: 实现聚合逻辑
-        ├── rest/
-        │   └── OrderDetailController.java    # TODO: 实现 REST 端点
-        ├── grpc/
-        │   ├── GrpcServerRunner.java         # ← 框架已给定
-        │   └── OrderDetailGrpcService.java  # TODO: 实现 gRPC 服务
-        └── graphql/
-            └── OrderDetailDataFetcher.java   # TODO: 实现 DGS DataFetcher
+└── initial/                                 # 练习骨架 → 动手补全 (带 TODO)
+    ├── pom.xml
+    ├── src/.../domain/                      # ← 领域模型完整
+    ├── src/.../infra/                       # ← Mock 仓储完整
+    ├── src/.../application/                 # TODO: 聚合逻辑
+    ├── src/.../rest/                        # TODO: REST 端点
+    ├── src/.../grpc/                        # TODO: gRPC 服务
+    └── src/.../graphql/                     # TODO: DGS DataFetcher
 ```
+
+> **关于两个压测工作区**：`benchmark-workspace` 与 `benchmark-workspace2` 分别由不同 AI 工具链独立生成，包含各自的压测脚本和执行结果。两者共用同一套被测系统（`src/`），目的是**交叉验证**压测数据的一致性。你可以分别进入两个目录执行各自的一键脚本，对比它们的结论是否吻合。
 
 ### 练习路线
 
